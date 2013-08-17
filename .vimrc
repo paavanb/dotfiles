@@ -1,3 +1,7 @@
+" Pathogen
+call pathogen#infect()
+call pathogen#helptags()
+
 syntax on
 syntax enable
 set background=dark
@@ -135,10 +139,6 @@ nnoremap <silent> `<C-n> :call NumberToggle()<CR>
 :command Q q
 
 " ---------PLUGINS----------
-" Pathogen
-call pathogen#infect()
-call pathogen#helptags()
-
 " Remap Command-T Buffers
 nnoremap <silent> <Leader>bt :CommandTBuffer<CR>
 
