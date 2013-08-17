@@ -143,7 +143,7 @@ nnoremap <silent> `<C-n> :call NumberToggle()<CR>
 nnoremap <silent> <Leader>bt :CommandTBuffer<CR>
 
 " NERDTree shortcut
-:command NT NERDTree
+nnoremap <silent> <Leader>nt :NERDTree<CR>
 
 " Bufexplorer customizations
 let g:bufExplorerShowRelativePath=1
