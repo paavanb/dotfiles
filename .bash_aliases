@@ -1,5 +1,3 @@
-# Alias 'vim' to macvim in terminal mode
 alias vim='mvim -v'
-# Colorize ls
 alias ls='ls -G'
-
+alias ip='dig +short myip.opendns.com @resolver1.opendns.com'
