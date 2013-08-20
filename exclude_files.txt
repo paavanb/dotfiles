@@ -1,0 +1,7 @@
+exclude_files.txt
+*.git
+*.gitignore
+*.gitmodules
+bootstrap.sh
+.DS_STORE
+README.md
