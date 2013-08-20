@@ -14,7 +14,7 @@ set backupdir=~/.vim/backup
 set nocompatible	" Use Vim defaults (much better!)
 set bs=indent,eol,start		" allow backspacing over everything in insert mode
 set ai			" always set autoindenting on
-"set backup		" keep a backup file
+set backup		" keep a backup file
 set viminfo='20,\"50	" read/write a .viminfo file, don't store more
 			" than 50 lines of registers
 set history=50		" keep 50 lines of command line history
@@ -106,7 +106,7 @@ let g:pymode_lint_checker="pyflakes,mccabe"
 au BufNewFile,BufRead *.hql set filetype=sql
 au BufNewFile,BufRead *.html set filetype=htmldjango
 
-" Change tab width depending on type
+" Change tab width depending on type (e.g. 4 for python, 2 for ruby)
 autocmd FileType ruby,htmldjango setlocal shiftwidth=2 tabstop=2
 autocmd FileType python setlocal shiftwidth=4 tabstop=4
 
@@ -118,6 +118,7 @@ map <down> <ESC>:bp<RETURN>
 map <left> <ESC>gT 
 map <right> <ESC>gt 
 
+" Use CTRL-hjkl to move around windows
 nmap <silent> <C-h> :wincmd h<CR>
 nmap <silent> <C-j> :wincmd j<CR>
 nmap <silent> <C-k> :wincmd k<CR>
@@ -132,9 +133,11 @@ function! NumberToggle()
     endif
 endfunc
 
+" C-n to toggle relative/absolute line numbers
 nnoremap <silent> `<C-n> :call NumberToggle()<CR>
 
 " Save and Quit maps
+" Got tired of accidentally hitting :Q and vim yelling at me
 :command W w
 :command Q q
 
