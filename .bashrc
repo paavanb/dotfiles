@@ -1,5 +1,7 @@
-alias vim='mvim -v'
 
+# Wonderful little function. Allows you to easily pipe output into vim.
+# Ex:
+# Instead of "git diff | vim -R -", you just need "v git diff"
 function v() {
     $@ | vim -R -
 }

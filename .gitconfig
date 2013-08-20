@@ -2,6 +2,11 @@
 	name = Paavan Bhavsar
 	email = pbhavsar@kyru.us
 
+# Nice and short aliases to common git commands.
+# git st will show you "short status", which is great for quickly getting an idea
+# for what's staged and unstaged. The syntax for short status is 
+# _ _ <file>, where the underscores are replaced by one-letter statuses
+# The left underscore represents staged, and the right represents unstaged.
 [alias]
     st = status -s
     co = checkout
