@@ -98,10 +98,6 @@ set tabstop=4
 set shiftwidth=4
 set expandtab
 
-" Pymode custom settings
-set foldlevelstart=2
-let g:pymode_lint_checker="pyflakes,mccabe"
-
 " File Extensions
 au BufNewFile,BufRead *.hql set filetype=sql
 au BufNewFile,BufRead *.html set filetype=htmldjango
@@ -152,6 +148,10 @@ nnoremap <silent> <Leader>nt :NERDTree<CR>
 let g:bufExplorerShowRelativePath=1
 let g:bufExplorerSortBy='fullpath'
 let g:bufExplorerSplitOutPathName=0
+
+" Python-mode custom settings
+set foldlevelstart=2
+let g:pymode_lint_checker="pyflakes,mccabe"
 
 " Syntastic
 let g:syntastic_enable_signs=1
