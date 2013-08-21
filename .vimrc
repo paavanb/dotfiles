@@ -134,7 +134,7 @@ function! NumberToggle()
 endfunc
 
 " C-n to toggle relative/absolute line numbers
-nnoremap <silent> `<C-n> :call NumberToggle()<CR>
+nnoremap <silent> <C-n> :call NumberToggle()<CR>
 
 " Save and Quit maps
 " Got tired of accidentally hitting :Q and vim yelling at me
@@ -157,3 +157,7 @@ let g:bufExplorerSplitOutPathName=0
 let g:syntastic_enable_signs=1
 let g:synastic_enable_highlighting=1
 let g:syntastic_ruby_exec='~/.rvm/rubies/ruby-2.0.0-p247/bin/ruby'
+
+" Vim-Ruby
+let g:rubycomplete_buffer_loading = 1 "load/eval code to provide completions
+let g:rubycomplete_classes_in_global = 1 "parse entire buffer to add classes to completion results
