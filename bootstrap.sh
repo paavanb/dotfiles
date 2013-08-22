@@ -3,8 +3,15 @@ cd "$(dirname "$0")"
 git pull
 function updateHomeDir() {
 	rsync --exclude-from './exclude_files.txt' -av . ~
-    # install C extension for vim's Command-T plugin
-    cd ~/.vim/bundle/command-t/plugin; rake make; cd -
+    setupCommandT
+}
+# install C extension for vim's Command-T plugin
+function setupCommandT() {
+    cd ~/.vim/bundle/command-t/plugin; 
+    echo "Setting up Command-T..."
+    rake make > /dev/null 2>&1 
+    echo "Done."
+    cd -
 }
 if [ "$1" == "--force" -o "$1" == "-f" ]; then
 	updateHomeDir
@@ -16,3 +23,4 @@ else
 	fi
 fi
 unset updateHomeDir
+unset setupCommandT
