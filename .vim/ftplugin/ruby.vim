@@ -1,2 +1,2 @@
 " automatically place a debugger line
-:nmap <Leader>br Obinding.pry<ESC>
+:nmap <Leader>br Orequire 'pry'; binding.pry<ESC>
