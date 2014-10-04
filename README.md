@@ -13,8 +13,7 @@ If you're not on a Mac, you'll want to compile a version of Vim with python and 
     
 ### Clone the repository
 
-    git clone --recursive https://github.com/pbhavsar/dotfiles.git
-The ``--recursive`` flag will recursively clone all the vim plugins under .vim/bundle
+    git clone https://github.com/pbhavsar/dotfiles.git
 
 ### Setup your Home Directory
 Run the bootstrap script, which will ``rsync`` all the files over to your home directory and run any setup scripts necessary.
