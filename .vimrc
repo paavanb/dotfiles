@@ -102,6 +102,10 @@ set statusline+=%= "left/right separator
 set statusline+=%l/%L "cursor line/total line
 set statusline+=\ %P "percent through file
 
+" Searching
+set ignorecase
+set smartcase
+
 " Tabs
 set tabstop=4
 set shiftwidth=4
