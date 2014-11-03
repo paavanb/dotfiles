@@ -3,4 +3,4 @@
 reverse green
 --color-match
 bold red 
-
+--ignore-dir=.ropeproject
