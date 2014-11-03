@@ -186,7 +186,11 @@ let g:pymode_lint=1
 let g:pymode_lint_checkers=['pyflakes', 'mccabe']
 let g:pymode_breakpoint_bind='\br'
 let g:pymode_rope_complete_on_dot = 1
+let g:pymode_options_max_line_length = 119
 let g:python_comment_text_width = 120
+let g:pymode_rope_goto_definition_cmd = 'e' " open goto definition in same window
+let g:pymode_lint_cwindow = 0
+
 " If you prefer the Omni-Completion tip window to close when a selection is
 " made, these lines close it on movement in insert mode or when leaving
 " insert mode
