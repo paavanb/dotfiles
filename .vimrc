@@ -208,6 +208,9 @@ let g:syntastic_python_flake8_args="--max-line-length=120"
 let g:rubycomplete_buffer_loading = 1 "load/eval code to provide completions
 let g:rubycomplete_classes_in_global = 1 "parse entire buffer to add classes to completion results
 
+" Vim-Fugitive
+set diffopt+=vertical " make diffs open vertically instead of horizontally (ew)
+
 " Vim-Airline
 let g:airline_section_z = '%l/%L'
 let g:airline_section_y = '%Y'
