@@ -166,11 +166,13 @@ nnoremap <silent> <C-n> :call NumberToggle()<CR>
 " ---------PLUGINS----------
 " Ctrl-P 
 nnoremap <silent> <Leader>t :CtrlP<CR>
-nnoremap <silent> <Leader>bt :CtrlPBuffer<CR>
+nnoremap ; :CtrlPBuffer<CR>
 let g:ctrlp_custom_ignore = '\.(pyc)$'
+set wildignore+=*.pyc
 
 " NERDTree shortcut
 nnoremap <silent> <Leader>nt :NERDTree<CR>
+nnoremap <Leader>e :NERDTreeToggle<CR>
 let NERDTreeIgnore = ['\.pyc$'] " ignore certain file extensions
 
 " Bufexplorer customizations
