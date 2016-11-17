@@ -28,6 +28,15 @@ set history=50		" keep 50 lines of command line history
 set ruler		" show the cursor position all the time
 set wrap linebreak textwidth=0
 set nowrap
+set esckeys " Exit insert mode instantly when ESC is pressed
+set timeoutlen=1000 ttimeoutlen=0 " Exit visual mode instantly when ESC is pressed
+set hidden
+set autowrite
+" Bash autocompletion
+set wildmode=longest,list,full
+set wildmenu
+set noswapfile  " Bane of my existence, stop those damn "This file is being edited" errors
+
 
 " Only do this part when compiled with support for autocommands
 if has("autocmd")
@@ -112,23 +121,36 @@ set shiftwidth=4
 set expandtab
 set list listchars=tab:»·,trail:·
 
-" Tab Aliases
-" indent support
-nmap <Tab> >>
-" unindent support
-nmap <S-Tab> <<
-imap <S-Tab> <C-d>
-
 " File Extensions
 au BufNewFile,BufRead *.hql set filetype=sql
-au BufNewFile,BufRead *.html set filetype=htmldjango
+au BufNewFile,BufRead *.html set filetype=HTML.HANDLEBARS
+au BufNewFile,BufRead *.less set filetype=css
+au BufNewFile,BufRead *.scss set filetype=sass
+au BufNewFile,BufRead *.sls set filetype=salt
+au BufNewFile,BufRead *.mustache set filetype=mustache.html
+au BufNewFile,BufRead *.tsv set filetype=tsv
+
 
 " Change tab width depending on type (e.g. 4 for python, 2 for ruby)
-autocmd FileType ruby,htmldjango setlocal shiftwidth=2 tabstop=2
+autocmd FileType ruby,htmldjango.html,mustache.html,html.handlebars setlocal shiftwidth=2 tabstop=2
 autocmd FileType python setlocal shiftwidth=4 tabstop=4
 autocmd FileType coffee setlocal shiftwidth=2 tabstop=2
+autocmd FileType javascript setlocal shiftwidth=2 tabstop=2
+autocmd FileType javascript.jsx setlocal shiftwidth=2 tabstop=2
+autocmd FileType css setlocal shiftwidth=2 tabstop=2
+autocmd FileType sass setlocal shiftwidth=2 tabstop=2
+autocmd FileType salt setlocal shiftwidth=2 tabstop=2
+autocmd FileType tsv setlocal noexpandtab shiftwidth=20 tabstop=20  " Disable tab-to-spaces for tsv's
 
-" Mappings"
+" Fold settings
+autocmd BufNewFile,BufReadPost *.coffee setl foldmethod=indent
+autocmd BufNewFile,BufRead *.coffee :normal zR
+set foldlevelstart=99
+
+" ==========================
+" ---------MAPPINGS---------
+" ==========================
+
 " Map up/down to next/prev buffer 
 map <up> <ESC>:bn<RETURN> 
 map <down> <ESC>:bp<RETURN> 
@@ -146,6 +168,14 @@ nmap <silent> <C-l> :wincmd l<CR>
 nnoremap j gj
 nnoremap k gk
 
+" Break line at cursor
+nnoremap K i<CR><Esc>
+
+" Paste Mappings
+map <Leader>y "+y
+map <Leader>p "+p
+map <Leader>P "+P
+
 " Relative/Absolute line numbers
 function! NumberToggle()
     if(&relativenumber == 1)
@@ -157,18 +187,46 @@ endfunc
 
 " C-n to toggle relative/absolute line numbers
 nnoremap <silent> <C-n> :call NumberToggle()<CR>
+:nmap <C-e> :e#<CR>
 
 " Save and Quit maps
 " Got tired of accidentally hitting :Q and vim yelling at me
 :command W w
 :command Q q
 
+" Build js files
+:map <Leader>s :!gulp build<CR>
+
+" Tab mappings
+nmap <tab> >>
+nmap <S-tab> <<
+
+" Like bufdo but restore the current buffer.
+function! BufDo(command)
+  let currBuff=bufnr("%")
+  execute 'bufdo ' . a:command
+  execute 'buffer ' . currBuff
+  " Refresh ctrl p
+  execute 'CtrlPClearCache'
+endfunction
+com! -nargs=+ -complete=command Bufdo call BufDo(<q-args>)
+
+" ==========================
 " ---------PLUGINS----------
+" ==========================
+
+" ----------Ack-------------
+" By default, don't open first result in buffer
+ca Ack Ack!
+
 " Ctrl-P 
 nnoremap <silent> <Leader>t :CtrlP<CR>
-nnoremap ; :CtrlPBuffer<CR>
-let g:ctrlp_custom_ignore = '\.(pyc)$'
+nnoremap <silent> <Leader>T :CtrlPBuffer<CR>
+"nnoremap ; :CtrlPBuffer<CR>
+let g:ctrlp_custom_ignore = '\.(pyc)|public/static/*$|node_modules/*$'
 set wildignore+=*.pyc
+set wildignore+=*/providermatch_admin/public/*
+set wildignore+=*/node_modules/*
 
 " NERDTree shortcut
 nnoremap <silent> <Leader>nt :NERDTree<CR>
@@ -181,15 +239,17 @@ let g:bufExplorerSortBy='fullpath'
 let g:bufExplorerSplitOutPathName=0
 
 " Python-mode custom settings
-set foldlevelstart=2
-let g:pymode_lint=1
-let g:pymode_lint_checkers=['pyflakes', 'mccabe']
-let g:pymode_breakpoint_bind='\br'
-let g:pymode_rope_complete_on_dot = 1
-let g:pymode_options_max_line_length = 119
-let g:python_comment_text_width = 120
-let g:pymode_rope_goto_definition_cmd = 'e' " open goto definition in same window
-let g:pymode_lint_cwindow = 0
+"set completeopt-=preview  " Don't show docs in scratch window when autocompleting
+"let g:pymode_doc=0  " Disable pymode documentation
+"let g:pymode_doc_bind = "<C-S-d>"
+"let g:pymode_rope=0  " Disable rope autocompletion
+"let g:pymode_rope_completion = 0  " Disable rope autocompletion
+"let g:pymode_lint=0
+"" let g:pymode_lint_checkers=['pyflakes', 'mccabe']
+"let g:pymode_breakpoint_bind='\br'
+"let g:pymode_options_max_line_length = 119
+"let g:python_comment_text_width = 120
+"let g:pymode_lint_cwindow = 0
 
 " If you prefer the Omni-Completion tip window to close when a selection is
 " made, these lines close it on movement in insert mode or when leaving
@@ -201,7 +261,7 @@ autocmd InsertLeave * if pumvisible() == 0|pclose|endif
 let g:syntastic_enable_signs=1
 let g:synastic_enable_highlighting=1
 let g:syntastic_ruby_exec='~/.rvm/rubies/ruby-2.0.0-p247/bin/ruby'
-let g:syntastic_python_checkers=['flake8']
+let g:syntastic_python_checkers=['python', 'flake8', 'pep8', 'pyflakes']
 let g:syntastic_python_flake8_args="--max-line-length=120"
 
 " Vim-Ruby
@@ -217,3 +277,13 @@ let g:airline_section_y = '%Y'
 let g:airline_section_x = ''
 let g:airline_left_sep=''
 let g:airline_right_sep=''
+
+" ------- Jedi-Vim -------------
+autocmd FileType python setlocal completeopt-=preview
+let g:jedi#use_tabs_not_buffers=0
+let g:jedi#popup_select_first=1
+let g:jedi#show_call_signatures=0
+let g:jedi#documentation_command = ""
+
+" Supertab
+let g:SuperTabDefaultCompletionType = "<c-n>"
