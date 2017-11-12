@@ -203,7 +203,7 @@ nnoremap <silent> <C-n> :call NumberToggle()<CR>
 nmap <tab> >>
 nmap <S-tab> <<
 
-" Like bufdo but restore the current buffer.
+" Like bufdo but restore the current buffer and refresh ctrl-p.
 function! BufDo(command)
   let currBuff=bufnr("%")
   execute 'bufdo ' . a:command
@@ -212,6 +212,11 @@ function! BufDo(command)
   execute 'CtrlPClearCache'
 endfunction
 com! -nargs=+ -complete=command Bufdo call BufDo(<q-args>)
+" Shortcut for refreshing vim
+nnoremap <Leader>R :Bufdo all<CR>
+
+" Disable ex mode
+:nnoremap Q <Nop>
 
 " ==========================
 " ---------PLUGINS----------
