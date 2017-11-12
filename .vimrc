@@ -274,6 +274,9 @@ let g:syntastic_ruby_exec='~/.rvm/rubies/ruby-2.0.0-p247/bin/ruby'
 let g:syntastic_python_checkers=['python', 'flake8', 'pep8', 'pyflakes']
 let g:syntastic_python_flake8_args="--max-line-length=120"
 
+" Vim-Coffee-Script
+autocmd BufNewFile,BufReadPost *.coffee setl foldmethod=indent nofoldenable " Fold by indentation
+
 " Vim-Ruby
 let g:rubycomplete_buffer_loading = 1 "load/eval code to provide completions
 let g:rubycomplete_classes_in_global = 1 "parse entire buffer to add classes to completion results
@@ -288,7 +291,7 @@ let g:airline_section_x = ''
 let g:airline_left_sep=''
 let g:airline_right_sep=''
 
-" ------- Jedi-Vim -------------
+" Jedi-Vim
 autocmd FileType python setlocal completeopt-=preview
 let g:jedi#use_tabs_not_buffers=0
 let g:jedi#popup_select_first=1
