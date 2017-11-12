@@ -19,6 +19,7 @@ colorscheme solarized
 set backup
 set backupdir=~/.vim/backup
 
+set encoding=utf-8
 set bs=indent,eol,start		" allow backspacing over everything in insert mode
 set ai			" always set autoindenting on
 set backup		" keep a backup file
