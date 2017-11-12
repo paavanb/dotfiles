@@ -136,6 +136,7 @@ au BufNewFile,BufRead *.tsv set filetype=tsv
 autocmd FileType ruby,htmldjango.html,mustache.html,html.handlebars setlocal shiftwidth=2 tabstop=2
 autocmd FileType python setlocal shiftwidth=4 tabstop=4
 autocmd FileType coffee setlocal shiftwidth=2 tabstop=2
+autocmd FileType json setlocal shiftwidth=2 tabstop=2
 autocmd FileType javascript setlocal shiftwidth=2 tabstop=2
 autocmd FileType javascript.jsx setlocal shiftwidth=2 tabstop=2
 autocmd FileType css setlocal shiftwidth=2 tabstop=2
