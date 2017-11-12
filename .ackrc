@@ -4,3 +4,6 @@ reverse green
 --color-match
 bold red 
 --ignore-dir=.ropeproject
+
+# Types
+--type-set=sass=.scss
