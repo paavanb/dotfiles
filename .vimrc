@@ -225,6 +225,9 @@ nnoremap <Leader>R :Bufdo all<CR>
 " ----------Ack-------------
 " By default, don't open first result in buffer
 ca Ack Ack!
+" Ack for the currently highlighted text
+nnoremap <Leader>a :Ack! 
+xnoremap <Leader>a y:Ack! <C-r>=fnameescape(@")<CR><CR>
 
 " Ctrl-P 
 nnoremap <silent> <Leader>t :CtrlP<CR>
