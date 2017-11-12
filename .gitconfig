@@ -1,6 +1,6 @@
 [user]
 	name = Paavan Bhavsar
-	email = pbhavsar@kyru.us
+	email = pbhavsar@kyruus.com
 
 # Nice and short aliases to common git commands.
 # git st will show you "short status", which is great for quickly getting an idea
@@ -11,6 +11,10 @@
     st = status -s
     co = checkout
     br = branch
+    pup = !git push --set-upstream origin `git symbolic-ref --short HEAD`
+    sup = !git branch --set-upstream-to=origin/`git symbolic-ref --short HEAD`
+    hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+    recent = for-each-ref --count=10 --sort=-committerdate refs/heads/ --format='%(refname:short)'
 
 [color]
     branch = auto
