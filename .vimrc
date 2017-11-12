@@ -124,7 +124,7 @@ set list listchars=tab:»·,trail:·
 
 " File Extensions
 au BufNewFile,BufRead *.hql set filetype=sql
-au BufNewFile,BufRead *.html set filetype=HTML.HANDLEBARS
+au BufNewFile,BufRead *.html set filetype=htmldjango.html
 au BufNewFile,BufRead *.less set filetype=css
 au BufNewFile,BufRead *.scss set filetype=sass
 au BufNewFile,BufRead *.sls set filetype=salt
