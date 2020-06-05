@@ -53,6 +53,9 @@ Plug 'google/vim-jsonnet'
 " Nginx
 Plug 'chr4/nginx.vim'
 
+" Toml
+Plug 'cespare/vim-toml'
+
 call plug#end()
 
 " Color scheme
