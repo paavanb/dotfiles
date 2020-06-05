@@ -22,12 +22,13 @@ Plug 'sirver/ultisnips'
 Plug 'honza/vim-snippets'
 
 " Language tooling
-Plug 'autozimu/LanguageClient-neovim', {
-    \ 'commit': 'ae23813',
-    "\ 'tag': 'v0.1.148',
-    "\ 'branch': 'next',
-    \ 'do': 'bash install.sh',
-    \ }
+"Plug 'autozimu/LanguageClient-neovim', {
+    "\ 'commit': 'ae23813',
+    ""\ 'tag': 'v0.1.148',
+    ""\ 'branch': 'next',
+    "\ 'do': 'bash install.sh',
+    "\ }
+Plug 'neovim/nvim-lsp'
 
 " Language Syntax
 "Plug 'dense-analysis/ale', { 'tag': 'v2.4.1' }
@@ -191,8 +192,31 @@ autocmd FileType javascript.jsx,typescript,typescript.tsx nnoremap <buffer> <Lea
 autocmd FileType python nnoremap <buffer> <Leader>br Oimport ipdb; ipdb.set_trace()<ESC>
 
 " ==========================
+" -----------LSP------------
+" ==========================
+lua << EOF
+    local nvim_lsp = require'nvim_lsp'
+    nvim_lsp.tsserver.setup{}
+    nvim_lsp.pyls.setup{}
+    nvim_lsp.rls.setup{}
+
+    -- Disable Inline Diagnostics globally
+    vim.lsp.callbacks["textDocument/publishDiagnostics"] = function() end
+EOF
+
+" ==========================
 " ---------PLUGINS----------
 " ==========================
+" ~~~LSP~~~
+nnoremap <silent> <Leader>D    <cmd>lua vim.lsp.buf.declaration()<CR>
+nnoremap <silent> <Leader>d <cmd>lua vim.lsp.buf.definition()<CR>
+nnoremap <silent> <Leader>s     <cmd>lua vim.lsp.buf.hover()<CR>
+nnoremap <silent> gD    <cmd>lua vim.lsp.buf.implementation()<CR>
+nnoremap <silent> gk <cmd>lua vim.lsp.buf.signature_help()<CR>
+nnoremap <silent> <Leader>S   <cmd>lua vim.lsp.buf.type_definition()<CR>
+nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
+nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
+nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
 " ~~~ Ack ~~~
 " By default, don't open first result in buffer
 ca Ack Ack!
@@ -263,26 +287,27 @@ set completeopt=menu,noinsert,menuone
 "autocmd FileType typescript,typescript.tsx nnoremap <buffer> <Leader>S :TSTypeDef<CR>
 
 " ~~~~~ LanguageClient-neovim ~~~~~
-" How to start language servers
-let g:LanguageClient_serverCommands = {
-    \ 'typescriptreact': ['typescript-language-server', '--stdio'],
-    \ 'typescript.tsx': ['typescript-language-server', '--stdio'],
-    \ 'typescript': ['typescript-language-server', '--stdio'],
-    \ 'javascript.jsx': ['typescript-language-server', '--stdio'],
-    \ 'python': ['pyls', '-v'],
-    \ }
-" Requires neovim 0.4.0 dev build
-let g:LanguageClient_useFloatingHover = 1
-" Don't need virtual text, we have ALE for linting
-let g:LanguageClient_useVirtualText = 0
-" Disable diagnostics, they end up wiping the ctrl-p pane
-let g:LanguageClient_diagnosticsEnable = 0
-nnoremap <Leader>d :call LanguageClient#textDocument_definition()<CR>
-nnoremap <Leader>D :call LanguageClient#textDocument_definition({'gotoCmd': 'split'})<CR>
-nnoremap <Leader>c :call LanguageClient#textDocument_rename()<CR>
-nnoremap <Leader>r :call LanguageClient#textDocument_references()<CR>
-nnoremap <Leader>s :call LanguageClient#textDocument_hover()<CR>
-nnoremap <Leader>S :call LanguageClient#textDocument_typeDefinition()<CR>
+"" How to start language servers
+"let g:LanguageClient_serverCommands = {
+    "\ 'typescriptreact': ['typescript-language-server', '--stdio'],
+    "\ 'typescript.tsx': ['typescript-language-server', '--stdio'],
+    "\ 'typescript': ['typescript-language-server', '--stdio'],
+    "\ 'javascript.jsx': ['typescript-language-server', '--stdio'],
+    "\ 'python': ['pyls', '-v'],
+    "\ 'rust': ['rls'],
+    "\ }
+"" Requires neovim 0.4.0 dev build
+"let g:LanguageClient_useFloatingHover = 1
+"" Don't need virtual text, we have ALE for linting
+"let g:LanguageClient_useVirtualText = 0
+"" Disable diagnostics, they end up wiping the ctrl-p pane
+"let g:LanguageClient_diagnosticsEnable = 0
+"nnoremap <Leader>d :call LanguageClient#textDocument_definition()<CR>
+"nnoremap <Leader>D :call LanguageClient#textDocument_definition({'gotoCmd': 'split'})<CR>
+"nnoremap <Leader>c :call LanguageClient#textDocument_rename()<CR>
+"nnoremap <Leader>r :call LanguageClient#textDocument_references()<CR>
+"nnoremap <Leader>s :call LanguageClient#textDocument_hover()<CR>
+"nnoremap <Leader>S :call LanguageClient#textDocument_typeDefinition()<CR>
 
 " ~~~~~ Closetag ~~~~~
 let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.tsx,*.jsx,*.js'
