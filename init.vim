@@ -37,7 +37,9 @@ Plug 'alvan/vim-closetag'
 
 " Language Autocomplete
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-Plug 'zchee/deoplete-jedi'
+Plug 'Shougo/deoplete-lsp'
+" Disable jedi in favor of lsp
+"Plug 'zchee/deoplete-jedi'
 
 " Javascript
 Plug 'mxw/vim-jsx'
@@ -57,6 +59,9 @@ Plug 'chr4/nginx.vim'
 " Toml
 Plug 'cespare/vim-toml'
 
+" Python
+Plug 'vim-python/python-syntax'
+
 call plug#end()
 
 " Color scheme
@@ -72,6 +77,8 @@ set ruler   "Always show current positions along the bottom
 set showcmd "show the command being typed
 set encoding=utf-8
 set autoindent
+set smartindent
+filetype indent off
 
 " Searching
 set ignorecase
@@ -108,6 +115,10 @@ set undoreload=10000
 " Support local configs
 set exrc
 set secure
+
+" Set correct paths for python binary
+let g:python_host_prog = $HOME."/.pyenv/shims/python"
+let g:python3_host_prog = $HOME."/.pyenv/shims/python"
 
 
 " ==========================
@@ -197,7 +208,9 @@ autocmd FileType python nnoremap <buffer> <Leader>br Oimport ipdb; ipdb.set_trac
 lua << EOF
     local nvim_lsp = require'nvim_lsp'
     nvim_lsp.tsserver.setup{}
-    nvim_lsp.pyls.setup{}
+    -- Uncomment to switch python language sever impls
+    -- nvim_lsp.pyls_ms.setup{} -- Requires :LspInstall pyls_ms
+    nvim_lsp.pyls.setup{} -- Requires pip install python-language-server
     nvim_lsp.rls.setup{}
 
     -- Disable Inline Diagnostics globally
@@ -208,15 +221,17 @@ EOF
 " ---------PLUGINS----------
 " ==========================
 " ~~~LSP~~~
-nnoremap <silent> <Leader>D    <cmd>lua vim.lsp.buf.declaration()<CR>
-nnoremap <silent> <Leader>d <cmd>lua vim.lsp.buf.definition()<CR>
-nnoremap <silent> <Leader>s     <cmd>lua vim.lsp.buf.hover()<CR>
-nnoremap <silent> gD    <cmd>lua vim.lsp.buf.implementation()<CR>
-nnoremap <silent> gk <cmd>lua vim.lsp.buf.signature_help()<CR>
-nnoremap <silent> <Leader>S   <cmd>lua vim.lsp.buf.type_definition()<CR>
-nnoremap <silent> gr    <cmd>lua vim.lsp.buf.references()<CR>
-nnoremap <silent> g0    <cmd>lua vim.lsp.buf.document_symbol()<CR>
-nnoremap <silent> gW    <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
+nnoremap <Leader>D  <cmd>lua vim.lsp.buf.declaration()<CR>
+nnoremap <Leader>d  <cmd>lua vim.lsp.buf.definition()<CR>
+nnoremap <Leader>s  <cmd>lua vim.lsp.buf.hover()<CR>
+nnoremap <Leader>r  <cmd>lua vim.lsp.buf.rename()<CR>
+nnoremap gD         <cmd>lua vim.lsp.buf.implementation()<CR>
+nnoremap gk         <cmd>lua vim.lsp.buf.signature_help()<CR>
+nnoremap <Leader>S  <cmd>lua vim.lsp.buf.type_definition()<CR>
+nnoremap gr         <cmd>lua vim.lsp.buf.references()<CR>
+nnoremap g0         <cmd>lua vim.lsp.buf.document_symbol()<CR>
+nnoremap gW         <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
+
 " ~~~ Ack ~~~
 " By default, don't open first result in buffer
 ca Ack Ack!
@@ -228,12 +243,17 @@ xnoremap <Leader>a y:Ack! <C-r>=fnameescape(@")<CR><CR>
 nnoremap <silent> <Leader>t :CtrlP<CR>
 nnoremap <silent> <Leader>T :CtrlPBuffer<CR>
 "nnoremap ; :CtrlPBuffer<CR>
-let g:ctrlp_custom_ignore = '\.(pyc)|public/static/*$|node_modules/*|\.git/*|build/*|dist/*$'
+let g:ctrlp_custom_ignore = {
+  \ 'dir': 'public\/static$|node_modules$|\.git$|build$|dist$|\.venv$|\.mypy_cache$',
+  \ 'file': '\.pyc$'
+  \ } " OLD VALUE: '\.(pyc)|public/static/*$|node_modules/*|\.git/*|build/*|dist/*|\.venv/*$|\.mypy_cache/*$'
 let g:ctrlp_working_path_mode = 0 " Only search in directory that vim started off in (important for monorepos, otherwise it crawls up the tree and searches the entire repo)
 let g:ctrlp_show_hidden = 1
 set wildignore+=*.pyc
 set wildignore+=*/.git/*
 set wildignore+=*/node_modules/*
+set wildignore+=*/.venv/*
+set wildignore+=*/.mypy_cache/*
 
 " ~~~~~ Vim-Fugitive ~~~~~
 set diffopt+=vertical " make diffs open vertically instead of horizontally (ew)
@@ -268,8 +288,16 @@ nnoremap <Leader>f :ALEFix<CR>
 let g:ale_fixers = {
     \ 'svg': ['xmllint'],
     \ 'python': ['black', 'isort'],
+    \ 'javascript': ['eslint', 'prettier'],
+    \ 'typescript': ['eslint', 'prettier'],
     \ }
-autocmd FileType javascript,javascript.jsx,typescript,typescript.tsx,typescriptreact let b:ale_fixers = ['eslint']
+"autocmd FileType javascript,javascript.jsx,typescript,typescript.tsx,typescriptreact let b:ale_fixers = ['eslint']
+
+" Set MYPYPATH explicitly if we're in a virtualenv
+"if !empty($VIRTUAL_ENV)
+    "let $MYPYPATH = $VIRTUAL_ENV.''
+"else
+"endif
 
 " ~~~~~ Deoplete ~~~~~
 let g:deoplete#enable_at_startup = 1
@@ -278,6 +306,9 @@ inoremap <expr><Tab> pumvisible() ? "\<C-n>" : "\<tab>"
 inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<tab>"
 inoremap <expr><C-n> deoplete#mappings#manual_complete()
 set completeopt=menu,noinsert,menuone
+
+" ~~~~~ python-syntax ~~~~~
+let g:python_highlight_all = 1
 
 " ~~~~~ nvim-typescript ~~~~~
 "autocmd FileType typescript,typescript.tsx nmap <buffer> <Leader>d :TSDef<CR>
@@ -330,7 +361,10 @@ let g:jsonnet_fmt_on_save = 0
 " ===============================================
 " ~~~~~~~~~~~~~~~~~ZENTREEFISH~~~~~~~~~~~~~~~~~~~
 let ZTF_LINT_PATH = '~/kensho/zentreefish/klib/pkgs/kensho_lint/kensho_lint/setup.cfg'
+let ZTF_PYLINT_PATH = '~/kensho/zentreefish/klib/pkgs/kensho_lint/kensho_lint/.pylintrc'
 let ZTF_TOML_PATH = '~/kensho/zentreefish/klib/pkgs/kensho_lint/kensho_lint/pyproject.toml'
 autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_black_options = '--config ' . ZTF_TOML_PATH
 autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_flake8_options = '--config ' . ZTF_LINT_PATH
 autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_isort_options = '--settings-path ' . ZTF_LINT_PATH
+autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_pylint_options = '--rcfile ' . ZTF_PYLINT_PATH
+autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_mypy_options = '--config-file ' . ZTF_LINT_PATH
