@@ -78,6 +78,7 @@ set showcmd "show the command being typed
 set encoding=utf-8
 set autoindent
 set smartindent
+set cindent cinkeys-=0# " Prevent python comments from breaking indent
 filetype indent off
 
 " Searching
@@ -281,8 +282,9 @@ let g:airline_right_sep=''
 " tsserver instead
 let g:ale_linters = {'typescript': ['tsserver', 'eslint'], 'javascript': ['eslint']}
 nnoremap <Leader>f :ALEFix<CR>
-" This stopped fixing prettier errors in ts projects. Might be config file related. UDPATE: Now it works.
-"autocmd FileType typescript,typescript.tsx nnoremap <buffer> <Leader>f :w<CR>:silent !npx eslint --fix %<CR>
+
+" Fixer for jsonnet files
+autocmd FileType jsonnet nnoremap <buffer> <Leader>f :w<CR>:silent !jsonnetfmt --comment-style s --string-style d -i %<CR>
 
 " Specify fixers for different filetypes
 let g:ale_fixers = {
