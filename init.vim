@@ -22,45 +22,19 @@ Plug 'sirver/ultisnips'
 Plug 'honza/vim-snippets'
 
 " Language tooling
-"Plug 'autozimu/LanguageClient-neovim', {
-    "\ 'commit': 'ae23813',
-    ""\ 'tag': 'v0.1.148',
-    ""\ 'branch': 'next',
-    "\ 'do': 'bash install.sh',
-    "\ }
-Plug 'neovim/nvim-lsp'
+Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'hrsh7th/nvim-compe'
 
 " Language Syntax
-"Plug 'dense-analysis/ale', { 'tag': 'v2.4.1' }
 Plug 'dense-analysis/ale', { 'tag': 'v2.6.0' }
 Plug 'alvan/vim-closetag'
-
-" Language Autocomplete
-Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-Plug 'Shougo/deoplete-lsp'
-" Disable jedi in favor of lsp
-"Plug 'zchee/deoplete-jedi'
-
-" Javascript
-Plug 'mxw/vim-jsx'
-Plug 'pangloss/vim-javascript'
-
-" Typescript
-Plug 'ianks/vim-tsx'
-Plug 'leafgarland/typescript-vim'
-Plug 'peitalin/vim-jsx-typescript'
 
 " Jsonnet
 Plug 'google/vim-jsonnet'
 
 " Nginx
 Plug 'chr4/nginx.vim'
-
-" Toml
-Plug 'cespare/vim-toml'
-
-" Python
-Plug 'vim-python/python-syntax'
 
 call plug#end()
 
@@ -207,17 +181,63 @@ autocmd FileType python nnoremap <buffer> <Leader>br Oimport ipdb; ipdb.set_trac
 " -----------LSP------------
 " ==========================
 lua << EOF
-    local nvim_lsp = require'nvim_lsp'
-    nvim_lsp.tsserver.setup{}
+    local lspconfig = require'lspconfig'
+    lspconfig.tsserver.setup{}
     -- Uncomment to switch python language sever impls
-    -- nvim_lsp.pyls_ms.setup{} -- Requires :LspInstall pyls_ms
-    nvim_lsp.pyls.setup{} -- Requires pip install python-language-server
-    nvim_lsp.rls.setup{}
+    -- lspconfig.pyls_ms.setup{} -- Requires :LspInstall pyls_ms
+    lspconfig.pyls.setup{} -- Requires pip install python-language-server
+    lspconfig.rls.setup{}
 
-    -- Disable Inline Diagnostics globally
-    vim.lsp.callbacks["textDocument/publishDiagnostics"] = function() end
+    -- Disable inline dianostics
+    vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+    vim.lsp.diagnostic.on_publish_diagnostics, {
+        virtual_text = false,
+        signs = false
+    }
+)
 EOF
 
+" ==========================
+" -------TREE-SITTER--------
+" ==========================
+lua <<EOF
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  highlight = {
+    enable = true,              -- false will disable the whole extension
+  },
+}
+EOF
+
+" ==========================
+" --------NVIM-COMPE--------
+" ==========================
+set completeopt=menuone,noselect
+lua <<EOF
+  require'compe'.setup {
+    enabled = true;
+    autocomplete = true;
+    debug = false;
+    min_length = 1;
+    preselect = 'enable';
+    throttle_time = 80;
+    source_timeout = 200;
+    incomplete_delay = 400;
+    max_abbr_width = 100;
+    max_kind_width = 100;
+    max_menu_width = 100;
+    documentation = true;
+
+    source = {
+      path = true;
+      buffer = true;
+      calc = true;
+      nvim_lsp = true;
+      nvim_lua = true;
+      vsnip = true;
+    };
+  }
+EOF
 " ==========================
 " ---------PLUGINS----------
 " ==========================
@@ -300,47 +320,6 @@ let g:ale_fixers = {
     "let $MYPYPATH = $VIRTUAL_ENV.''
 "else
 "endif
-
-" ~~~~~ Deoplete ~~~~~
-let g:deoplete#enable_at_startup = 1
-" Tabs for scrolling
-inoremap <expr><Tab> pumvisible() ? "\<C-n>" : "\<tab>"
-inoremap <expr><S-Tab> pumvisible() ? "\<C-p>" : "\<tab>"
-inoremap <expr><C-n> deoplete#mappings#manual_complete()
-set completeopt=menu,noinsert,menuone
-
-" ~~~~~ python-syntax ~~~~~
-let g:python_highlight_all = 1
-
-" ~~~~~ nvim-typescript ~~~~~
-"autocmd FileType typescript,typescript.tsx nmap <buffer> <Leader>d :TSDef<CR>
-"autocmd FileType typescript,typescript.tsx nnoremap <buffer> <Leader>D :TSDefPreview<CR>
-"autocmd FileType typescript,typescript.tsx nmap <buffer> <Leader>r :TSRename<CR>
-"autocmd FileType typescript,typescript.tsx nmap <buffer> <Leader>s :TSType<CR>
-"autocmd FileType typescript,typescript.tsx nnoremap <buffer> <Leader>S :TSTypeDef<CR>
-
-" ~~~~~ LanguageClient-neovim ~~~~~
-"" How to start language servers
-"let g:LanguageClient_serverCommands = {
-    "\ 'typescriptreact': ['typescript-language-server', '--stdio'],
-    "\ 'typescript.tsx': ['typescript-language-server', '--stdio'],
-    "\ 'typescript': ['typescript-language-server', '--stdio'],
-    "\ 'javascript.jsx': ['typescript-language-server', '--stdio'],
-    "\ 'python': ['pyls', '-v'],
-    "\ 'rust': ['rls'],
-    "\ }
-"" Requires neovim 0.4.0 dev build
-"let g:LanguageClient_useFloatingHover = 1
-"" Don't need virtual text, we have ALE for linting
-"let g:LanguageClient_useVirtualText = 0
-"" Disable diagnostics, they end up wiping the ctrl-p pane
-"let g:LanguageClient_diagnosticsEnable = 0
-"nnoremap <Leader>d :call LanguageClient#textDocument_definition()<CR>
-"nnoremap <Leader>D :call LanguageClient#textDocument_definition({'gotoCmd': 'split'})<CR>
-"nnoremap <Leader>c :call LanguageClient#textDocument_rename()<CR>
-"nnoremap <Leader>r :call LanguageClient#textDocument_references()<CR>
-"nnoremap <Leader>s :call LanguageClient#textDocument_hover()<CR>
-"nnoremap <Leader>S :call LanguageClient#textDocument_typeDefinition()<CR>
 
 " ~~~~~ Closetag ~~~~~
 let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.tsx,*.jsx,*.js'
