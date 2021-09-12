@@ -52,7 +52,7 @@ set showcmd "show the command being typed
 set encoding=utf-8
 set autoindent
 set smartindent
-set cindent cinkeys-=0# " Prevent python comments from breaking indent
+set cindent cinkeys-=0#,: " Prevent python comments or other characters from breaking indent
 filetype indent off
 
 " Searching
@@ -185,14 +185,15 @@ lua << EOF
     lspconfig.tsserver.setup{}
     -- Uncomment to switch python language sever impls
     -- lspconfig.pyls_ms.setup{} -- Requires :LspInstall pyls_ms
-    lspconfig.pyls.setup{} -- Requires pip install python-language-server
+    lspconfig.pylsp.setup{} -- Requires pip install python-lsp-server[all]
     lspconfig.rls.setup{}
 
     -- Disable inline dianostics
     vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
     vim.lsp.diagnostic.on_publish_diagnostics, {
         virtual_text = false,
-        signs = false
+        signs = false,
+        underline = false
     }
 )
 EOF
@@ -238,6 +239,9 @@ lua <<EOF
     };
   }
 EOF
+" Allow tab/shift-tab to scroll through options
+inoremap <silent><expr> <TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 " ==========================
 " ---------PLUGINS----------
 " ==========================
