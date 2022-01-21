@@ -52,7 +52,12 @@ set showcmd "show the command being typed
 set encoding=utf-8
 set autoindent
 set smartindent
-set cindent cinkeys-=0#,: " Prevent python comments or other characters from breaking indent
+set nocindent
+" Prevent python comments or other characters from breaking indent
+:inoremap # X<BS>#
+set indentkeys-=0#,<:>
+set cinkeys-=0#,<:>
+
 filetype indent off
 
 " Searching
@@ -109,15 +114,16 @@ nmap <silent> <C-j> :wincmd j<CR>
 nmap <silent> <C-k> :wincmd k<CR>
 nmap <silent> <C-l> :wincmd l<CR>
 
-" Movement Mappings
+" Movement Mappings, allow j/k to move one visual line even if wrapped
 nnoremap j gj
 nnoremap k gk
 
 vnoremap j gj
 vnoremap k gk
 
-" Break line at cursor
+" Break line at cursor, inverse of J
 nnoremap K i<CR><Esc>
+
 " Switch to last file
 nmap <C-e> :e#<CR>
 
@@ -160,6 +166,7 @@ autocmd BufRead,BufNewFile *.jsx set filetype=javascript.jsx
 set foldmethod=syntax
 set foldlevelstart=99
 autocmd FileType yml setlocal foldmethod=indent
+autocmd FileType python setlocal foldmethod=indent
 
 " Like bufdo but restore the current buffer and refresh ctrl-p.
 function! BufDo(command)
@@ -186,7 +193,8 @@ lua << EOF
     -- Uncomment to switch python language sever impls
     -- lspconfig.pyls_ms.setup{} -- Requires :LspInstall pyls_ms
     lspconfig.pylsp.setup{} -- Requires pip install python-lsp-server[all]
-    lspconfig.rls.setup{}
+    -- RLS 2.0
+    lspconfig.rust_analyzer.setup{}  -- brew install rust-analyzer
 
     -- Disable inline dianostics
     vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
@@ -304,7 +312,10 @@ let g:airline_right_sep=''
 " ~~~~~ ALE ~~~~~
 " Temporary fix since tslint doesn't respect the local prettierrc. Use global
 " tsserver instead
-let g:ale_linters = {'typescript': ['tsserver', 'eslint'], 'javascript': ['eslint']}
+let g:ale_linters = {
+  \ 'typescript': ['tsserver', 'eslint'],
+  \ 'javascript': ['eslint'],
+  \ }
 nnoremap <Leader>f :ALEFix<CR>
 
 " Fixer for jsonnet files
@@ -316,6 +327,7 @@ let g:ale_fixers = {
     \ 'python': ['black', 'isort'],
     \ 'javascript': ['eslint', 'prettier'],
     \ 'typescript': ['eslint', 'prettier'],
+    \ 'rust': ['rustfmt'],
     \ }
 "autocmd FileType javascript,javascript.jsx,typescript,typescript.tsx,typescriptreact let b:ale_fixers = ['eslint']
 
