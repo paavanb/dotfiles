@@ -2,8 +2,14 @@
 --color-filename
 reverse green
 --color-match
-bold red 
+bold red
+
 --ignore-dir=.ropeproject
+--ignore-dir=build
+--ignore-dir=dist
+--ignore-dir=target
+--ignore-dir=.venv
+--ignore-dir=.mypy_cache
 
 # Types
 --type-set=sass=.scss

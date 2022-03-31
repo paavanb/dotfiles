@@ -1,3 +1,9 @@
-alias vim='mvim -v'
+alias vim='nvim'
 alias ls='ls -G'
 alias ip='dig +short myip.opendns.com @resolver1.opendns.com'
+alias ipython='python -m IPython'
+alias gs='git st'
+alias gd='v git diff'
+alias gdc='v git diff --cached'
+alias gco='fbr'
+alias dc="docker compose" # Overwrites 'dc' command, but don't need

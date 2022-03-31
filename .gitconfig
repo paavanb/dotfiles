@@ -36,3 +36,12 @@
     added = yellow
     changed = green
     untracked = normal
+
+[pull]
+    rebase = false
+
+[core]
+editor = nvim
+
+[fetch]
+    prune = true
