@@ -342,16 +342,3 @@ au FileType xml,html,phtml,php,xhtml,js,jsx,ts,tsx let b:delimitMate_matchpairs 
 
 " ~~~~~ jsonnet ~~~~~
 let g:jsonnet_fmt_on_save = 0
-
-" ===============================================
-" ---------DIRECTORY-SPECIFIC-SETTINGS-----------
-" ===============================================
-" ~~~~~~~~~~~~~~~~~ZENTREEFISH~~~~~~~~~~~~~~~~~~~
-let ZTF_LINT_PATH = '~/kensho/zentreefish/klib/pkgs/kensho_lint/kensho_lint/setup.cfg'
-let ZTF_PYLINT_PATH = '~/kensho/zentreefish/klib/pkgs/kensho_lint/kensho_lint/.pylintrc'
-let ZTF_TOML_PATH = '~/kensho/zentreefish/klib/pkgs/kensho_lint/kensho_lint/pyproject.toml'
-autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_black_options = '--config ' . ZTF_TOML_PATH
-autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_flake8_options = '--config ' . ZTF_LINT_PATH
-autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_isort_options = '--settings-path ' . ZTF_LINT_PATH
-autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_pylint_options = '--rcfile ' . ZTF_PYLINT_PATH
-autocmd BufRead,BufNewFile */kensho/zentreefish/* let g:ale_python_mypy_options = '--config-file ' . ZTF_LINT_PATH
