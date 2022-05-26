@@ -213,7 +213,7 @@ EOF
 " ==========================
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = {"python", "typescript", "rust"},
+  ensure_installed = {"python", "javascript", "typescript", "tsx", "rust"},
   highlight = {
     enable = true,              -- false will disable the whole extension
   },
