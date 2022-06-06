@@ -50,7 +50,7 @@ set nowrap
 
 " General
 set mouse=a "use mouse everywhere
-set relativenumber  "turn on line numbers
+set number relativenumber  "turn on hybrid line numbers
 set ruler   "Always show current positions along the bottom
 set showcmd "show the command being typed
 set encoding=utf-8
@@ -75,9 +75,10 @@ set incsearch
 :command! W w
 :command! Q q
 
+" Shortcut for automatically refreshing the config
+:nnoremap <Leader><Leader> :source $MYVIMRC<CR>
+
 " Tab mappings
-nmap <tab> >>
-nmap <S-tab> <<
 vmap <tab> >
 vmap <S-tab> <
 
@@ -111,6 +112,9 @@ let g:python3_host_prog = $HOME."/.pyenv/shims/python"
 
 " Let <ESC> enter normal mode in terminal mode
 :tnoremap <Esc> <C-\><C-n>
+
+" Toggle absolute line numbers
+nnoremap <Leader>n :set relativenumber!<CR>
 
 " Use CTRL-hjkl to move around windows
 nmap <silent> <C-h> :wincmd h<CR>
@@ -288,7 +292,6 @@ let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 let g:UltiSnipsSnippetDirectories = ['UltiSnips', $HOME.'/.config/UltiSnips']
 
 " ~~~~~ NERDTree ~~~~~
-nnoremap <silent> <Leader>nt :NERDTree<CR>
 nnoremap <Leader>e :NERDTreeToggle<CR>
 let NERDTreeIgnore = ['\.pyc$'] " ignore certain file extensions
 
