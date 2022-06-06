@@ -23,6 +23,7 @@ Plug 'honza/vim-snippets'
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
+" Requires font-hack-nerd-font
 Plug 'kyazdani42/nvim-web-devicons'
 
 " Language tooling
@@ -154,7 +155,7 @@ nnoremap <Leader>m :messages<CR>
 " Change tab width depending on type (e.g. 4 for python, 2 for ruby)
 autocmd FileType ruby,htmldjango.html,mustache.html,html.handlebars,html,yaml,jsonnet setlocal shiftwidth=2 tabstop=2
 autocmd FileType python setlocal shiftwidth=4 tabstop=4
-autocmd FileType json,proto setlocal shiftwidth=2 tabstop=2
+autocmd FileType json,proto setlocal shiftwidth=4 tabstop=4
 autocmd FileType pug setlocal shiftwidth=2 tabstop=2
 autocmd FileType javascript setlocal shiftwidth=2 tabstop=2
 autocmd FileType javascript.jsx setlocal shiftwidth=2 tabstop=2
@@ -195,29 +196,30 @@ autocmd FileType python nnoremap <buffer> <Leader>br Oimport ipdb; ipdb.set_trac
 " ==========================
 lua << EOF
     local lspconfig = require'lspconfig'
-    lspconfig.tsserver.setup{}
+    lspconfig.tsserver.setup{} -- Requires npm install -g typescript typescript-language-server
     -- Uncomment to switch python language sever impls
     -- lspconfig.pyls_ms.setup{} -- Requires :LspInstall pyls_ms
-    lspconfig.pylsp.setup{} -- Requires pip install python-lsp-server[all]
+    lspconfig.pylsp.setup{} -- Requires pip install "python-lsp-server[all]"
     -- RLS 2.0
     lspconfig.rust_analyzer.setup{}  -- brew install rust-analyzer
 
     -- Disable inline dianostics
     vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-    vim.lsp.diagnostic.on_publish_diagnostics, {
-        virtual_text = false,
-        signs = false,
-        underline = false
-    }
-)
+        vim.lsp.diagnostic.on_publish_diagnostics, {
+            virtual_text = false,
+            signs = false,
+            underline = false
+        }
+    )
 EOF
+nnoremap <Leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
 
 " ==========================
 " -------TREE-SITTER--------
 " ==========================
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = {"python", "javascript", "typescript", "tsx", "rust"},
+  ensure_installed = {"python", "rust", "typescript", "javascript", "tsx"}, -- one of "all", or a list of languages
   highlight = {
     enable = true,              -- false will disable the whole extension
   },
@@ -345,3 +347,6 @@ au FileType xml,html,phtml,php,xhtml,js,jsx,ts,tsx let b:delimitMate_matchpairs 
 
 " ~~~~~ jsonnet ~~~~~
 let g:jsonnet_fmt_on_save = 0
+
+" Load custom settings
+source $HOME/.config/nvim/custom.vim
