@@ -344,6 +344,7 @@ let g:closetag_regions = {
 " ~~~~~ Delimitmate ~~~~~
 " Prevent conflict with closetag (adding extra ending bracket '>')
 au FileType xml,html,phtml,php,xhtml,js,jsx,ts,tsx let b:delimitMate_matchpairs = "(:),[:],{:}"
+inoremap <CR> <Plug>delimitMateCR
 let delimitMate_expand_space = 1
 let delimitMate_expand_cr = 1
 let delimitMate_jump_expansion = 1
