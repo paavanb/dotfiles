@@ -31,6 +31,7 @@ Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/nvim-treesitter-context'
 Plug 'hrsh7th/nvim-compe'
+Plug 'simrat39/symbols-outline.nvim'
 
 " Language Syntax
 Plug 'dense-analysis/ale'
@@ -285,6 +286,26 @@ xnoremap <Leader>a <cmd>lua require('telescope.builtin').grep_string()<CR>
 " Keep my old ctrl-p plugin binding to make searching files faster
 nnoremap <Leader>t <cmd>lua require('telescope.builtin').find_files()<CR>
 
+" ~~~~~ SymbolsOutline ~~~~~
+lua << EOF
+    require("symbols-outline").setup {
+        keymaps = { -- These keymaps can be a string or a table for multiple keys
+            close = {"<Esc>", "q"},
+            goto_location = "<CR>",
+            focus_location = "<S-CR>",
+            hover_symbol = "<Leader>s",
+            toggle_preview = "K",
+            rename_symbol = "r",
+            code_actions = "a",
+            fold = "x",
+            unfold = "o",
+            fold_all = "X",
+            unfold_all = "O",
+            fold_reset = "R",
+          }
+    }
+EOF
+nnoremap <Leader>o :SymbolsOutline<CR>
 
 " ~~~~~ Vim-Fugitive ~~~~~
 set diffopt+=vertical " make diffs open vertically instead of horizontally (ew)
