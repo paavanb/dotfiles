@@ -29,10 +29,11 @@ Plug 'kyazdani42/nvim-web-devicons'
 " Language tooling
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'nvim-treesitter/nvim-treesitter-context'
 Plug 'hrsh7th/nvim-compe'
 
 " Language Syntax
-Plug 'dense-analysis/ale', { 'tag': 'v2.6.0' }
+Plug 'dense-analysis/ale'
 Plug 'alvan/vim-closetag'
 
 " Jsonnet
@@ -51,7 +52,8 @@ set nowrap
 
 " General
 set mouse=a "use mouse everywhere
-set number relativenumber  "turn on hybrid line numbers
+set relativenumber  "turn on line numbers
+set number
 set ruler   "Always show current positions along the bottom
 set showcmd "show the command being typed
 set encoding=utf-8
@@ -76,10 +78,9 @@ set incsearch
 :command! W w
 :command! Q q
 
-" Shortcut for automatically refreshing the config
-:nnoremap <Leader><Leader> :source $MYVIMRC<CR>
-
 " Tab mappings
+" Avoid remapping tab in normal mode, so that CTRL-I works for moving around
+" jumplist (Ctrl-I === <Tab>)
 vmap <tab> >
 vmap <S-tab> <
 
@@ -113,9 +114,6 @@ let g:python3_host_prog = $HOME."/.pyenv/shims/python"
 
 " Let <ESC> enter normal mode in terminal mode
 :tnoremap <Esc> <C-\><C-n>
-
-" Toggle absolute line numbers
-nnoremap <Leader>n :set relativenumber!<CR>
 
 " Use CTRL-hjkl to move around windows
 nmap <silent> <C-h> :wincmd h<CR>
@@ -198,8 +196,10 @@ lua << EOF
     local lspconfig = require'lspconfig'
     lspconfig.tsserver.setup{} -- Requires npm install -g typescript typescript-language-server
     -- Uncomment to switch python language sever impls
-    -- lspconfig.pyls_ms.setup{} -- Requires :LspInstall pyls_ms
-    lspconfig.pylsp.setup{} -- Requires pip install "python-lsp-server[all]"
+    -- lspconfig.pylsp.setup{} -- Requires pip install "python-lsp-server[all]"
+    lspconfig.pyright.setup{} -- Requires npm install -g pyright
+
+
     -- RLS 2.0
     lspconfig.rust_analyzer.setup{}  -- brew install rust-analyzer
 
@@ -219,7 +219,7 @@ nnoremap <Leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
 " ==========================
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
-  ensure_installed = {"python", "rust", "typescript", "javascript", "tsx"}, -- one of "all", or a list of languages
+  ensure_installed = {"python", "rust", "typescript", "javascript", "tsx", "vim", "yaml"}, -- one of "all", or a list of languages
   highlight = {
     enable = true,              -- false will disable the whole extension
   },
@@ -255,6 +255,7 @@ lua <<EOF
     };
   }
 EOF
+inoremap <silent><expr> <C-Space> compe#complete()
 " Allow tab/shift-tab to scroll through options
 inoremap <silent><expr> <TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
@@ -284,6 +285,7 @@ xnoremap <Leader>a <cmd>lua require('telescope.builtin').grep_string()<CR>
 " Keep my old ctrl-p plugin binding to make searching files faster
 nnoremap <Leader>t <cmd>lua require('telescope.builtin').find_files()<CR>
 
+
 " ~~~~~ Vim-Fugitive ~~~~~
 set diffopt+=vertical " make diffs open vertically instead of horizontally (ew)
 
@@ -294,6 +296,7 @@ let g:UltiSnipsJumpBackwardTrigger="<c-z>"
 let g:UltiSnipsSnippetDirectories = ['UltiSnips', $HOME.'/.config/UltiSnips']
 
 " ~~~~~ NERDTree ~~~~~
+nnoremap <silent> <Leader>nt :NERDTree<CR>
 nnoremap <Leader>e :NERDTreeToggle<CR>
 let NERDTreeIgnore = ['\.pyc$'] " ignore certain file extensions
 
@@ -305,12 +308,6 @@ let g:airline_left_sep=''
 let g:airline_right_sep=''
 
 " ~~~~~ ALE ~~~~~
-" Temporary fix since tslint doesn't respect the local prettierrc. Use global
-" tsserver instead
-let g:ale_linters = {
-  \ 'typescript': ['tsserver', 'eslint'],
-  \ 'javascript': ['eslint'],
-  \ }
 nnoremap <Leader>F :ALEFix<CR>
 
 " Fixer for jsonnet files
@@ -320,17 +317,21 @@ autocmd FileType jsonnet nnoremap <buffer> <Leader>f :w<CR>:silent !jsonnetfmt -
 let g:ale_fixers = {
     \ 'svg': ['xmllint'],
     \ 'python': ['black', 'isort'],
-    \ 'javascript': ['eslint', 'prettier'],
-    \ 'typescript': ['eslint', 'prettier'],
+    \ 'javascript': ['prettier'],
+    \ 'typescript': ['prettier'],
     \ 'rust': ['rustfmt'],
     \ }
-"autocmd FileType javascript,javascript.jsx,typescript,typescript.tsx,typescriptreact let b:ale_fixers = ['eslint']
+let g:ale_linters = {
+    \ 'python': ['pylint'],
+    \ }
+
+let g:ale_javascript_prettier_executable = 'prettierd'
 
 " Set MYPYPATH explicitly if we're in a virtualenv
-"if !empty($VIRTUAL_ENV)
-    "let $MYPYPATH = $VIRTUAL_ENV.''
-"else
-"endif
+if !empty($VIRTUAL_ENV)
+    let $MYPYPATH = $VIRTUAL_ENV.''
+else
+endif
 
 " ~~~~~ Closetag ~~~~~
 let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.tsx,*.jsx,*.js'
@@ -343,7 +344,12 @@ let g:closetag_regions = {
 
 " ~~~~~ Delimitmate ~~~~~
 " Prevent conflict with closetag (adding extra ending bracket '>')
-au FileType xml,html,phtml,php,xhtml,js,jsx,ts,tsx let b:delimitMate_matchpairs = "(:),[:],{:}"
+au FileType xml,html,phtml,php,xhtml,py,js,jsx,ts,tsx let b:delimitMate_matchpairs = "(:),[:],{:},`:`"
+inoremap <CR> <Plug>delimitMateCR
+let delimitMate_expand_space = 1
+let delimitMate_expand_cr = 1
+let delimitMate_jump_expansion = 1
+
 
 " ~~~~~ jsonnet ~~~~~
 let g:jsonnet_fmt_on_save = 0
