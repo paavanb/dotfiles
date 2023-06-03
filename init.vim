@@ -286,6 +286,25 @@ xnoremap <Leader>a <cmd>lua require('telescope.builtin').grep_string()<CR>
 " Keep my old ctrl-p plugin binding to make searching files faster
 nnoremap <Leader>t <cmd>lua require('telescope.builtin').find_files()<CR>
 
+lua <<EOF
+    require('telescope').setup {
+        pickers = {
+            find_files = {
+                hidden = true
+            },
+            live_grep = {
+                hidden = true
+            }
+        },
+        defaults = {
+            file_ignore_patterns = {
+                "node_modules",
+                ".git"
+            }
+        }
+    }
+EOF
+
 " ~~~~~ SymbolsOutline ~~~~~
 lua << EOF
     require("symbols-outline").setup {
