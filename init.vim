@@ -15,7 +15,7 @@ Plug 'tpope/vim-eunuch'
 Plug 'tpope/vim-repeat'
 Plug 'qpkorr/vim-bufkill'
 Plug 'tpope/vim-surround'
-Plug 'raimondi/delimitMate'
+Plug 'windwp/nvim-autopairs'
 Plug 'sirver/ultisnips'
 Plug 'honza/vim-snippets'
 
@@ -382,14 +382,10 @@ let g:closetag_regions = {
     \ 'javascript': 'jsxRegion',
     \ }
 
-" ~~~~~ Delimitmate ~~~~~
-" Prevent conflict with closetag (adding extra ending bracket '>')
-au FileType xml,html,phtml,php,xhtml,py,js,jsx,ts,tsx let b:delimitMate_matchpairs = "(:),[:],{:},`:`"
-inoremap <CR> <Plug>delimitMateCR
-let delimitMate_expand_space = 1
-let delimitMate_expand_cr = 1
-let delimitMate_jump_expansion = 1
-
+" ~~~~~ Autopairs ~~~~~
+lua << EOF
+require("nvim-autopairs").setup {}
+EOF
 
 " ~~~~~ jsonnet ~~~~~
 let g:jsonnet_fmt_on_save = 0
