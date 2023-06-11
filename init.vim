@@ -16,8 +16,6 @@ Plug 'tpope/vim-repeat'
 Plug 'qpkorr/vim-bufkill'
 Plug 'tpope/vim-surround'
 Plug 'windwp/nvim-autopairs'
-Plug 'sirver/ultisnips'
-Plug 'honza/vim-snippets'
 
 " - Telescope
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
@@ -30,8 +28,18 @@ Plug 'kyazdani42/nvim-web-devicons'
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/nvim-treesitter-context'
-Plug 'hrsh7th/nvim-compe'
 Plug 'simrat39/symbols-outline.nvim'
+
+" Autocomplete
+Plug 'hrsh7th/nvim-cmp'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'hrsh7th/cmp-buffer'
+Plug 'hrsh7th/cmp-path'
+Plug 'hrsh7th/cmp-cmdline'
+
+" Snippets
+Plug 'hrsh7th/vim-vsnip'
+Plug 'hrsh7th/vim-vsnip-integ'
 
 " Language Syntax
 Plug 'dense-analysis/ale'
@@ -221,6 +229,9 @@ nnoremap <Leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {"python", "rust", "typescript", "javascript", "tsx", "vim", "yaml"}, -- one of "all", or a list of languages
+  indent = {
+    enable = true
+  },
   highlight = {
     enable = true,              -- false will disable the whole extension
   },
@@ -228,38 +239,80 @@ require'nvim-treesitter.configs'.setup {
 EOF
 
 " ==========================
-" --------NVIM-COMPE--------
+" ------- NVIM-CMP----------
 " ==========================
-set completeopt=menuone,noselect
 lua <<EOF
-  require'compe'.setup {
-    enabled = true;
-    autocomplete = true;
-    debug = false;
-    min_length = 1;
-    preselect = 'enable';
-    throttle_time = 80;
-    source_timeout = 200;
-    incomplete_delay = 400;
-    max_abbr_width = 100;
-    max_kind_width = 100;
-    max_menu_width = 100;
-    documentation = true;
+  -- Set up nvim-cmp.
+  local cmp = require'cmp'
 
-    source = {
-      path = true;
-      buffer = true;
-      calc = true;
-      nvim_lsp = true;
-      nvim_lua = true;
-      vsnip = true;
-    };
+  cmp.setup({
+    snippet = {
+      expand = function(args)
+        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+      end,
+    },
+    window = {
+      -- completion = cmp.config.window.bordered(),
+      -- documentation = cmp.config.window.bordered(),
+    },
+    mapping = cmp.mapping.preset.insert({
+      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<Tab>'] = cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }),
+      ['<S-Tab>'] = cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.abort(),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+    }),
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      { name = 'vsnip' }, -- For vsnip users.
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Set configuration for specific filetype.
+  cmp.setup.filetype('gitcommit', {
+    sources = cmp.config.sources({
+      { name = 'git' }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline({ '/', '?' }, {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+      { name = 'buffer' }
+    }
+  })
+
+  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources({
+      { name = 'path' }
+    }, {
+      { name = 'cmdline' }
+    })
+  })
+
+  -- Set up lspconfig.
+  local capabilities = require('cmp_nvim_lsp').default_capabilities()
+  -- Repeat for each configured lsp server
+  require('lspconfig')['tsserver'].setup {
+    capabilities = capabilities
+  }
+  require('lspconfig')['pyright'].setup {
+    capabilities = capabilities
+  }
+  require('lspconfig')['rust_analyzer'].setup {
+    capabilities = capabilities
   }
 EOF
-inoremap <silent><expr> <C-Space> compe#complete()
-" Allow tab/shift-tab to scroll through options
-inoremap <silent><expr> <TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
 " ==========================
 " ---------PLUGINS----------
 " ==========================
@@ -328,12 +381,6 @@ nnoremap <Leader>o :SymbolsOutline<CR>
 
 " ~~~~~ Vim-Fugitive ~~~~~
 set diffopt+=vertical " make diffs open vertically instead of horizontally (ew)
-
-" ~~~~~ UltiSnips ~~~~~
-let g:UltiSnipsExpandTrigger="<leader>*"
-let g:UltiSnipsJumpForwardTrigger="<c-b>"
-let g:UltiSnipsJumpBackwardTrigger="<c-z>"
-let g:UltiSnipsSnippetDirectories = ['UltiSnips', $HOME.'/.config/UltiSnips']
 
 " ~~~~~ NERDTree ~~~~~
 nnoremap <silent> <Leader>nt :NERDTree<CR>
