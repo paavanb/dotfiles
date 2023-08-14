@@ -3,10 +3,11 @@ call plug#begin('~/.local/share/nvim/plugged')
 Plug 'overcache/NeoSolarized'
 
 " Status line
-Plug 'bling/vim-airline'
+Plug 'nvim-lualine/lualine.nvim'
 
 " Project Navigation
-Plug 'scrooloose/nerdtree'
+Plug 'nvim-tree/nvim-tree.lua'
+Plug 'nvim-tree/nvim-web-devicons'
 Plug 'easymotion/vim-easymotion'
 
 Plug 'tpope/vim-fugitive'
@@ -237,6 +238,14 @@ require'nvim-treesitter.configs'.setup {
   },
 }
 EOF
+" ==========================
+" ------- LUALINE ----------
+" ==========================
+lua <<EOF
+require('lualine').setup {
+  options = { theme = 'solarized_dark' },
+}
+EOF
 
 " ==========================
 " ------- NVIM-CMP----------
@@ -252,8 +261,8 @@ lua <<EOF
       end,
     },
     window = {
-      -- completion = cmp.config.window.bordered(),
-      -- documentation = cmp.config.window.bordered(),
+      completion = cmp.config.window.bordered(),
+      documentation = cmp.config.window.bordered(),
     },
     mapping = cmp.mapping.preset.insert({
       ['<C-b>'] = cmp.mapping.scroll_docs(-4),
@@ -266,7 +275,6 @@ lua <<EOF
     }),
     sources = cmp.config.sources({
       { name = 'nvim_lsp' },
-      { name = 'vsnip' }, -- For vsnip users.
     }, {
       { name = 'buffer' },
     })
@@ -382,17 +390,12 @@ nnoremap <Leader>o :SymbolsOutline<CR>
 " ~~~~~ Vim-Fugitive ~~~~~
 set diffopt+=vertical " make diffs open vertically instead of horizontally (ew)
 
-" ~~~~~ NERDTree ~~~~~
-nnoremap <silent> <Leader>nt :NERDTree<CR>
-nnoremap <Leader>e :NERDTreeToggle<CR>
-let NERDTreeIgnore = ['\.pyc$'] " ignore certain file extensions
+" ~~~~~ nvim-tree ~~~~~~~
+lua << EOF
+  require("nvim-tree").setup()
+EOF
+nnoremap <Leader>e :NvimTreeToggle<CR>
 
-" ~~~~~ Vim-Airline ~~~~~
-let g:airline_section_z = '%l/%L'
-let g:airline_section_y = '%Y'
-let g:airline_section_x = ''
-let g:airline_left_sep=''
-let g:airline_right_sep=''
 
 " ~~~~~ ALE ~~~~~
 nnoremap <Leader>F :ALEFix<CR>
@@ -422,6 +425,7 @@ endif
 
 " ~~~~~ Closetag ~~~~~
 let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.tsx,*.jsx,*.js'
+let g:closetag_xhtml_filenames = '*.tsx,*.jsx'
 let g:closetag_regions = {
     \ 'typescriptreact': 'jsxRegion,tsxRegion',
     \ 'typescript.tsx': 'jsxRegion,tsxRegion',
