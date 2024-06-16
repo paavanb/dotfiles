@@ -229,13 +229,18 @@ lua << EOF
     -- Disable inline dianostics
     vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
         vim.lsp.diagnostic.on_publish_diagnostics, {
-            virtual_text = false,
-            signs = false,
-            underline = false
+            virtual_text = false,  -- Not useful since it always runs off the edge
+            signs = true,
+            underline = true
         }
     )
+
+    -- Show error in popup
+    vim.keymap.set('n', '<space>e', vim.diagnostic.open_float)
+    -- Show all errors in the current file in location list
+    vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
 EOF
-nnoremap <Leader>ca <cmd>lua vim.lsp.buf.code_action()<CR>
+nnoremap <buffer> <M-CR> <cmd>lua vim.lsp.buf.code_action()<CR>
 
 " ==========================
 " -------TREE-SITTER--------
