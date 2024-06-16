@@ -211,7 +211,16 @@ lua << EOF
     lspconfig.tsserver.setup{} -- Requires npm install -g typescript typescript-language-server
     -- Uncomment to switch python language sever impls
     -- lspconfig.pylsp.setup{} -- Requires pip install "python-lsp-server[all]"
-    lspconfig.pyright.setup{} -- Requires npm install -g pyright
+    lspconfig.pyright.setup{ -- Requires npm install -g pyright
+        settings = {
+            python = {
+                anaysis = {
+                    autoSearchPaths = true,
+                    diagnosticMode = 'openFilesOnly',
+                }
+            }
+        }
+    }
 
 
     -- RLS 2.0
