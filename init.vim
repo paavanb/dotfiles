@@ -17,6 +17,7 @@ Plug 'tpope/vim-repeat'
 Plug 'qpkorr/vim-bufkill'
 Plug 'tpope/vim-surround'
 Plug 'windwp/nvim-autopairs'
+Plug 'windwp/nvim-ts-autotag'
 
 " - Telescope
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
@@ -44,7 +45,6 @@ Plug 'hrsh7th/vim-vsnip-integ'
 
 " Language Syntax
 Plug 'dense-analysis/ale'
-Plug 'alvan/vim-closetag'
 
 " Jsonnet
 Plug 'google/vim-jsonnet'
@@ -248,6 +248,10 @@ nnoremap <buffer> <M-CR> <cmd>lua vim.lsp.buf.code_action()<CR>
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {"python", "rust", "typescript", "javascript", "tsx", "vim", "yaml"}, -- one of "all", or a list of languages
+  autotag = {
+      enable = true,
+      filetypes = {"html", "tsx", "jsx" }
+  },
   indent = {
     enable = true
   },
@@ -456,19 +460,27 @@ if !empty($VIRTUAL_ENV)
 else
 endif
 
-" ~~~~~ Closetag ~~~~~
-let g:closetag_filenames = '*.html,*.xhtml,*.phtml,*.tsx,*.jsx,*.js'
-let g:closetag_xhtml_filenames = '*.tsx,*.jsx'
-let g:closetag_regions = {
-    \ 'typescriptreact': 'jsxRegion,tsxRegion',
-    \ 'typescript.tsx': 'jsxRegion,tsxRegion',
-    \ 'javascript.jsx': 'jsxRegion',
-    \ 'javascript': 'jsxRegion',
-    \ }
-
 " ~~~~~ Autopairs ~~~~~
 lua << EOF
 require("nvim-autopairs").setup {}
+EOF
+
+"~~~~~~ Autotag ~~~~~
+lua << EOF
+require('nvim-ts-autotag').setup({
+  opts = {
+    -- Defaults
+    enable_close = true, -- Auto close tags
+    enable_rename = true, -- Auto rename pairs of tags
+    enable_close_on_slash = false -- Auto close on trailing </
+  },
+  -- Also override individual filetype configs, these take priority.
+  -- Empty by default, useful if one of the "opts" global settings
+  -- doesn't work well in a specific filetype
+  per_filetype = {
+    ["html"] = { }
+  }
+})
 EOF
 
 " ~~~~~ jsonnet ~~~~~
