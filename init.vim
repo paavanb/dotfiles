@@ -386,7 +386,14 @@ lua <<EOF
         defaults = {
             file_ignore_patterns = {
                 "node_modules",
-                ".git"
+                ".git",
+                ".pickle",
+                ".csv",
+                "data/.*.json",
+                "data/.*.txt",
+                "data/.*.csv",
+                "data/.*.CSV",
+                "frontend/package-lock.json",
             }
         }
     }
