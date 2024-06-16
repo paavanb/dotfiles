@@ -131,6 +131,10 @@ nmap <silent> <C-j> :wincmd j<CR>
 nmap <silent> <C-k> :wincmd k<CR>
 nmap <silent> <C-l> :wincmd l<CR>
 
+" Jump between buffers
+nnoremap <C-,> :bp<CR>
+nnoremap <C-.> :bn<CR>
+
 " Movement Mappings, allow j/k to move one visual line even if wrapped
 nnoremap j gj
 nnoremap k gk
