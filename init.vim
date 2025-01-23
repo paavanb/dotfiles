@@ -1,6 +1,6 @@
 call plug#begin('~/.local/share/nvim/plugged')
 " Color scheme
-Plug 'overcache/NeoSolarized'
+Plug 'Tsuzat/NeoSolarized.nvim'
 
 " Status line
 Plug 'nvim-lualine/lualine.nvim'
@@ -52,11 +52,20 @@ Plug 'google/vim-jsonnet'
 " Nginx
 Plug 'chr4/nginx.vim'
 
+" Terminal
+Plug 'akinsho/toggleterm.nvim', {'tag' : '*'}
+
 call plug#end()
 
 " Color scheme
-set background=dark
+lua <<EOF
+require('NeoSolarized').setup {
+  style = "dark",
+  transparent = false
+}
+EOF
 colorscheme NeoSolarized
+set background=dark
 
 set nowrap
 
@@ -208,7 +217,7 @@ autocmd FileType python nnoremap <buffer> <Leader>br Oimport ipdb; ipdb.set_trac
 " ==========================
 lua << EOF
     local lspconfig = require'lspconfig'
-    lspconfig.tsserver.setup{} -- Requires npm install -g typescript typescript-language-server
+    lspconfig.ts_ls.setup{} -- Requires npm install -g typescript typescript-language-server
     -- Uncomment to switch python language sever impls
     -- lspconfig.pylsp.setup{} -- Requires pip install "python-lsp-server[all]"
     lspconfig.pyright.setup{ -- Requires npm install -g pyright
@@ -248,10 +257,10 @@ nnoremap <buffer> <M-CR> <cmd>lua vim.lsp.buf.code_action()<CR>
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
   ensure_installed = {"python", "rust", "typescript", "javascript", "tsx", "vim", "yaml"}, -- one of "all", or a list of languages
-  autotag = {
-      enable = true,
-      filetypes = {"html", "tsx", "jsx" }
-  },
+  --autotag = {
+  --    enable = true,
+  --    filetypes = {"html", "tsx", "jsx" }
+  --},
   indent = {
     enable = true
   },
@@ -282,7 +291,43 @@ EOF
 " ==========================
 lua <<EOF
   -- Set up nvim-cmp.
-  local cmp = require'cmp'
+  local cmp = require('cmp')
+
+  -- from https://github.com/hrsh7th/nvim-cmp/discussions/1834
+  local lspkind_comparator = function(conf)
+      local lsp_types = require("cmp.types").lsp
+      return function(entry1, entry2)
+          if entry1.source.name ~= "nvim_lsp" then
+              if entry2.source.name == "nvim_lsp" then
+                  return false
+              else
+                  return nil
+              end
+          end
+          local kind1 = lsp_types.CompletionItemKind[entry1:get_kind()]
+          local kind2 = lsp_types.CompletionItemKind[entry2:get_kind()]
+          local label1 = entry1:get_completion_item().label
+          local label2 = entry2:get_completion_item().label
+          if kind1 == "Variable" and label1:match("%w*=") then
+              kind1 = "Parameter"
+          end
+          if kind2 == "Variable" and label2:match("%w*=") then
+              kind2 = "Parameter"
+          end
+
+          local priority1 = conf.kind_priority[kind1] or 0
+          local priority2 = conf.kind_priority[kind2] or 0
+          if priority1 == priority2 then
+              return nil
+          end
+          return priority2 < priority1
+      end
+  end
+
+  -- TODO: Need to compare labels based on autocomplete query, so results are sorted by closest match (paavanb)
+  local label_comparator = function(entry1, entry2)
+      return entry1.completion_item.label < entry2.completion_item.label
+  end
 
   cmp.setup({
     snippet = {
@@ -304,10 +349,46 @@ lua <<EOF
       ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
     }),
     sources = cmp.config.sources({
-      { name = 'nvim_lsp' },
-    }, {
-      { name = 'buffer' },
-    })
+          { name = 'nvim_lsp' },
+        }, {
+          { name = 'buffer' },
+        }
+    ),
+    sorting = {
+        comparators = {
+          lspkind_comparator({
+            kind_priority = {
+              Parameter = 14,
+              Variable = 13,
+              Field = 12,
+              Property = 12,
+              Constant = 11,
+              Enum = 11,
+              EnumMember = 11,
+              Event = 10,
+              Function = 10,
+              Method = 10,
+              Operator = 10,
+              Reference = 10,
+              Struct = 10,
+              File = 8,
+              Folder = 8,
+              Class = 5,
+              Color = 5,
+              Module = 5,
+              Keyword = 2,
+              Constructor = 1,
+              Interface = 1,
+              Snippet = 0,
+              Text = 1,
+              TypeParameter = 1,
+              Unit = 1,
+              Value = 1,
+            },
+          }),
+          cmp.config.compare.score,
+        }
+    },
   })
 
   -- Set configuration for specific filetype.
@@ -340,13 +421,13 @@ lua <<EOF
   -- Set up lspconfig.
   local capabilities = require('cmp_nvim_lsp').default_capabilities()
   -- Repeat for each configured lsp server
-  require('lspconfig')['tsserver'].setup {
+  require('lspconfig').ts_ls.setup {
     capabilities = capabilities
   }
-  require('lspconfig')['pyright'].setup {
+  require('lspconfig').pyright.setup {
     capabilities = capabilities
   }
-  require('lspconfig')['rust_analyzer'].setup {
+  require('lspconfig').rust_analyzer.setup {
     capabilities = capabilities
   }
 EOF
@@ -374,8 +455,6 @@ nnoremap <Leader>fh <cmd>lua require('telescope.builtin').help_tags()<CR>
 " Keep my old Ack plugin bindings to make searching faster
 nnoremap <Leader>a <cmd>lua require('telescope.builtin').live_grep()<CR>
 xnoremap <Leader>a <cmd>lua require('telescope.builtin').grep_string()<CR>
-" Keep my old ctrl-p plugin binding to make searching files faster
-nnoremap <Leader>t <cmd>lua require('telescope.builtin').find_files()<CR>
 
 lua <<EOF
     require('telescope').setup {
@@ -398,6 +477,7 @@ lua <<EOF
                 "data/.*.csv",
                 "data/.*.CSV",
                 "frontend/package-lock.json",
+                "poetry.lock",
             }
         }
     }
@@ -485,6 +565,14 @@ EOF
 
 " ~~~~~ jsonnet ~~~~~
 let g:jsonnet_fmt_on_save = 0
+
+" ~~~~~ toggleterm ~~~~~
+lua << EOF
+require("toggleterm").setup {
+    open_mapping = [[\t]],
+    direction = "float",  -- Floating terminal
+}
+EOF
 
 " Load custom settings
 source $HOME/.config/nvim/custom.vim
