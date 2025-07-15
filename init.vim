@@ -269,6 +269,10 @@ require'nvim-treesitter.configs'.setup {
   },
 }
 EOF
+
+lua <<EOF
+require'treesitter-context'.setup{}
+EOF
 " ==========================
 " ------- LUALINE ----------
 " ==========================
@@ -523,16 +527,17 @@ autocmd FileType jsonnet nnoremap <buffer> <Leader>f :w<CR>:silent !jsonnetfmt -
 " Specify fixers for different filetypes
 let g:ale_fixers = {
     \ 'svg': ['xmllint'],
-    \ 'python': ['black', 'isort'],
+    \ 'python': ['ruff', 'ruff_format'],
     \ 'javascript': ['prettier'],
     \ 'typescript': ['prettier'],
     \ 'rust': ['rustfmt'],
     \ }
 let g:ale_linters = {
-    \ 'python': ['pylint'],
+    \ 'python': ['ruff'],
     \ }
 
 let g:ale_javascript_prettier_executable = 'prettierd'
+let g:ale_python_ruff_auto_poetry = 1
 
 " Set MYPYPATH explicitly if we're in a virtualenv
 if !empty($VIRTUAL_ENV)
