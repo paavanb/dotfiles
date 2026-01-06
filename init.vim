@@ -8,7 +8,6 @@ Plug 'nvim-lualine/lualine.nvim'
 " Project Navigation
 Plug 'nvim-tree/nvim-tree.lua'
 Plug 'nvim-tree/nvim-web-devicons'
-Plug 'easymotion/vim-easymotion'
 
 Plug 'tpope/vim-fugitive'
 Plug 'scrooloose/nerdcommenter'
@@ -21,7 +20,7 @@ Plug 'windwp/nvim-ts-autotag'
 
 " - Telescope
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-lua/plenary.nvim'  " also required for neotest
 Plug 'nvim-telescope/telescope.nvim'
 " Requires font-hack-nerd-font
 Plug 'kyazdani42/nvim-web-devicons'
@@ -38,6 +37,12 @@ Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'hrsh7th/cmp-buffer'
 Plug 'hrsh7th/cmp-path'
 Plug 'hrsh7th/cmp-cmdline'
+
+" Testing
+Plug 'nvim-neotest/neotest'
+Plug 'nvim-neotest/neotest-python'
+Plug 'antoinemadec/FixCursorHold.nvim'  " Needed for neotest
+Plug 'nvim-neotest/nvim-nio'  " Needed for neotest
 
 " Snippets
 Plug 'hrsh7th/vim-vsnip'
@@ -216,24 +221,24 @@ autocmd FileType python nnoremap <buffer> <Leader>br Oimport ipdb; ipdb.set_trac
 " -----------LSP------------
 " ==========================
 lua << EOF
-    local lspconfig = require'lspconfig'
-    lspconfig.ts_ls.setup{} -- Requires npm install -g typescript typescript-language-server
+    vim.lsp.config("ts_ls", {}) -- Requires `npm install -g typescript typescript-language-server`
     -- Uncomment to switch python language sever impls
-    -- lspconfig.pylsp.setup{} -- Requires pip install "python-lsp-server[all]"
-    lspconfig.pyright.setup{ -- Requires npm install -g pyright
-        settings = {
-            python = {
-                anaysis = {
-                    autoSearchPaths = true,
-                    diagnosticMode = 'openFilesOnly',
-                }
-            }
-        }
-    }
+    -- lspconfig.pylsp.setup{} -- Requires `pip install "python-lsp-server[all]"`
+    -- lspconfig.pyright.setup{ -- Requires `npm install -g pyright`
+    --     settings = {
+    --         python = {
+    --             anaysis = {
+    --                 autoSearchPaths = true,
+    --                 diagnosticMode = 'openFilesOnly',
+    --             }
+    --         }
+    --     }
+    -- }
+    vim.lsp.config("ty", {}) -- Requires `pip install ty`
 
 
     -- RLS 2.0
-    lspconfig.rust_analyzer.setup{}  -- brew install rust-analyzer
+    vim.lsp.config("rust_analyzer", {})  -- brew install rust-analyzer
 
     -- Disable inline dianostics
     vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
@@ -255,12 +260,8 @@ nnoremap <buffer> <M-CR> <cmd>lua vim.lsp.buf.code_action()<CR>
 " -------TREE-SITTER--------
 " ==========================
 lua <<EOF
-require'nvim-treesitter.configs'.setup {
+require'nvim-treesitter.config'.setup {
   ensure_installed = {"python", "rust", "typescript", "javascript", "tsx", "vim", "yaml"}, -- one of "all", or a list of languages
-  --autotag = {
-  --    enable = true,
-  --    filetypes = {"html", "tsx", "jsx" }
-  --},
   indent = {
     enable = true
   },
@@ -360,37 +361,41 @@ lua <<EOF
     ),
     sorting = {
         comparators = {
-          lspkind_comparator({
-            kind_priority = {
-              Parameter = 14,
-              Variable = 13,
-              Field = 12,
-              Property = 12,
-              Constant = 11,
-              Enum = 11,
-              EnumMember = 11,
-              Event = 10,
-              Function = 10,
-              Method = 10,
-              Operator = 10,
-              Reference = 10,
-              Struct = 10,
-              File = 8,
-              Folder = 8,
-              Class = 5,
-              Color = 5,
-              Module = 5,
-              Keyword = 2,
-              Constructor = 1,
-              Interface = 1,
-              Snippet = 0,
-              Text = 1,
-              TypeParameter = 1,
-              Unit = 1,
-              Value = 1,
-            },
-          }),
+          --lspkind_comparator({
+          --  kind_priority = {
+          --    Parameter = 14,
+          --    Variable = 13,
+          --    Field = 12,
+          --    Property = 12,
+          --    Constant = 11,
+          --    Enum = 11,
+          --    EnumMember = 11,
+          --    Event = 10,
+          --    Function = 10,
+          --    Method = 10,
+          --    Operator = 10,
+          --    Reference = 10,
+          --    Struct = 10,
+          --    File = 8,
+          --    Folder = 8,
+          --    Class = 5,
+          --    Color = 5,
+          --    Module = 5,
+          --    Keyword = 2,
+          --    Constructor = 1,
+          --    Interface = 1,
+          --    Snippet = 0,
+          --    Text = 1,
+          --    TypeParameter = 1,
+          --    Unit = 1,
+          --    Value = 1,
+          --  },
+          -- }),
+          cmp.config.compare.locality,
+          cmp.config.compare.recently_used,
           cmp.config.compare.score,
+          cmp.config.compare.offset,
+          cmp.config.compare.order,
         }
     },
   })
@@ -425,15 +430,13 @@ lua <<EOF
   -- Set up lspconfig.
   local capabilities = require('cmp_nvim_lsp').default_capabilities()
   -- Repeat for each configured lsp server
-  require('lspconfig').ts_ls.setup {
+  vim.lsp.config("ts_ls", {
     capabilities = capabilities
-  }
-  require('lspconfig').pyright.setup {
+  })
+  vim.lsp.config("rust_analyzer", {
     capabilities = capabilities
-  }
-  require('lspconfig').rust_analyzer.setup {
-    capabilities = capabilities
-  }
+  })
+  vim.lsp.enable({"ts_ls", "rust_analyzer", "ty"})
 EOF
 
 " ==========================
@@ -486,6 +489,20 @@ lua <<EOF
         }
     }
 EOF
+
+" ~~~~~ Neotest ~~~~~
+lua <<EOF
+    require("neotest").setup {
+        adapters = {
+            require("neotest-python")({
+                dap = { justMyCode = false,
+                    },
+                runner = "bh-pytest" -- Need to define a custom adapter + TestRunner for this name before it will work
+            }),
+        }
+    }
+EOF
+nnoremap <Leader><Leader>t <cmd>lua require("neotest").run.run()<CR>
 
 " ~~~~~ SymbolsOutline ~~~~~
 lua << EOF
