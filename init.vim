@@ -197,12 +197,6 @@ autocmd FileType tsv setlocal noexpandtab shiftwidth=20 tabstop=20  " Disable ta
 autocmd BufRead,BufNewFile *.tsx set filetype=typescript.tsx
 autocmd BufRead,BufNewFile *.jsx set filetype=javascript.jsx
 
-" Fold settings
-set foldmethod=syntax
-set foldlevelstart=99
-autocmd FileType yml setlocal foldmethod=indent
-autocmd FileType python setlocal foldmethod=indent
-
 " Restore the current buffer
 function! BufDo(command)
   let currBuff=bufnr("%")
@@ -224,18 +218,17 @@ lua << EOF
     vim.lsp.config("ts_ls", {}) -- Requires `npm install -g typescript typescript-language-server`
     -- Uncomment to switch python language sever impls
     -- lspconfig.pylsp.setup{} -- Requires `pip install "python-lsp-server[all]"`
-    -- lspconfig.pyright.setup{ -- Requires `npm install -g pyright`
-    --     settings = {
-    --         python = {
-    --             anaysis = {
-    --                 autoSearchPaths = true,
-    --                 diagnosticMode = 'openFilesOnly',
-    --             }
-    --         }
-    --     }
-    -- }
-    vim.lsp.config("ty", {}) -- Requires `pip install ty`
-
+    vim.lsp.config("pyright", { -- Requires `npm install -g pyright`
+        settings = {
+            python = {
+                anaysis = {
+                    autoSearchPaths = true,
+                    diagnosticMode = 'openFilesOnly',
+                }
+            }
+        }
+    })
+    --vim.lsp.config("ty", {}) -- Requires `pip install ty`
 
     -- RLS 2.0
     vim.lsp.config("rust_analyzer", {})  -- brew install rust-analyzer
@@ -260,15 +253,14 @@ nnoremap <buffer> <M-CR> <cmd>lua vim.lsp.buf.code_action()<CR>
 " -------TREE-SITTER--------
 " ==========================
 lua <<EOF
-require'nvim-treesitter.config'.setup {
-  ensure_installed = {"python", "rust", "typescript", "javascript", "tsx", "vim", "yaml"}, -- one of "all", or a list of languages
-  indent = {
-    enable = true
-  },
-  highlight = {
-    enable = true,              -- false will disable the whole extension
-  },
-}
+require'nvim-treesitter'.install {"python", "rust", "typescript", "javascript", "tsx", "vim", "yaml"}
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = {"python", "rust", "javascript", "typescript", "tsx", "typescript.tsx", "vim", "yaml"},
+  callback = function()
+      vim.treesitter.start()
+  end,
+})
 EOF
 
 lua <<EOF
@@ -298,42 +290,6 @@ lua <<EOF
   -- Set up nvim-cmp.
   local cmp = require('cmp')
 
-  -- from https://github.com/hrsh7th/nvim-cmp/discussions/1834
-  local lspkind_comparator = function(conf)
-      local lsp_types = require("cmp.types").lsp
-      return function(entry1, entry2)
-          if entry1.source.name ~= "nvim_lsp" then
-              if entry2.source.name == "nvim_lsp" then
-                  return false
-              else
-                  return nil
-              end
-          end
-          local kind1 = lsp_types.CompletionItemKind[entry1:get_kind()]
-          local kind2 = lsp_types.CompletionItemKind[entry2:get_kind()]
-          local label1 = entry1:get_completion_item().label
-          local label2 = entry2:get_completion_item().label
-          if kind1 == "Variable" and label1:match("%w*=") then
-              kind1 = "Parameter"
-          end
-          if kind2 == "Variable" and label2:match("%w*=") then
-              kind2 = "Parameter"
-          end
-
-          local priority1 = conf.kind_priority[kind1] or 0
-          local priority2 = conf.kind_priority[kind2] or 0
-          if priority1 == priority2 then
-              return nil
-          end
-          return priority2 < priority1
-      end
-  end
-
-  -- TODO: Need to compare labels based on autocomplete query, so results are sorted by closest match (paavanb)
-  local label_comparator = function(entry1, entry2)
-      return entry1.completion_item.label < entry2.completion_item.label
-  end
-
   cmp.setup({
     snippet = {
       expand = function(args)
@@ -361,36 +317,6 @@ lua <<EOF
     ),
     sorting = {
         comparators = {
-          --lspkind_comparator({
-          --  kind_priority = {
-          --    Parameter = 14,
-          --    Variable = 13,
-          --    Field = 12,
-          --    Property = 12,
-          --    Constant = 11,
-          --    Enum = 11,
-          --    EnumMember = 11,
-          --    Event = 10,
-          --    Function = 10,
-          --    Method = 10,
-          --    Operator = 10,
-          --    Reference = 10,
-          --    Struct = 10,
-          --    File = 8,
-          --    Folder = 8,
-          --    Class = 5,
-          --    Color = 5,
-          --    Module = 5,
-          --    Keyword = 2,
-          --    Constructor = 1,
-          --    Interface = 1,
-          --    Snippet = 0,
-          --    Text = 1,
-          --    TypeParameter = 1,
-          --    Unit = 1,
-          --    Value = 1,
-          --  },
-          -- }),
           cmp.config.compare.locality,
           cmp.config.compare.recently_used,
           cmp.config.compare.score,
@@ -436,7 +362,14 @@ lua <<EOF
   vim.lsp.config("rust_analyzer", {
     capabilities = capabilities
   })
-  vim.lsp.enable({"ts_ls", "rust_analyzer", "ty"})
+  -- vim.lsp.config("ty", {
+  --   capabilities = capabilities
+  -- })
+  vim.lsp.config("pyright", {
+    capabilities = capabilities
+  })
+  vim.lsp.enable({"ts_ls", "rust_analyzer", "pyright"})
+  vim.o.winborder = 'rounded'
 EOF
 
 " ==========================
