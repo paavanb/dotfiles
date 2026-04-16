@@ -29,7 +29,7 @@ Plug 'kyazdani42/nvim-web-devicons'
 Plug 'neovim/nvim-lspconfig'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'nvim-treesitter/nvim-treesitter-context'
-Plug 'simrat39/symbols-outline.nvim'
+Plug 'hedyhli/outline.nvim'
 
 " Autocomplete
 Plug 'hrsh7th/nvim-cmp'
@@ -49,7 +49,8 @@ Plug 'hrsh7th/vim-vsnip'
 Plug 'hrsh7th/vim-vsnip-integ'
 
 " Language Syntax
-Plug 'dense-analysis/ale'
+Plug 'mfussenegger/nvim-lint'
+Plug 'stevearc/conform.nvim'
 
 " Jsonnet
 Plug 'google/vim-jsonnet'
@@ -204,8 +205,6 @@ function! BufDo(command)
   execute 'buffer ' . currBuff
 endfunction
 com! -nargs=+ -complete=command Bufdo call BufDo(<q-args>)
-" Shortcut for refreshing vim
-nnoremap <Leader>R :Bufdo all<CR>
 
 " Debugging shortcuts
 autocmd FileType javascript.jsx,typescript,typescript.tsx nnoremap <buffer> <Leader>br Odebugger<ESC>
@@ -217,18 +216,17 @@ autocmd FileType python nnoremap <buffer> <Leader>br Oimport ipdb; ipdb.set_trac
 lua << EOF
     vim.lsp.config("ts_ls", {}) -- Requires `npm install -g typescript typescript-language-server`
     -- Uncomment to switch python language sever impls
-    -- lspconfig.pylsp.setup{} -- Requires `pip install "python-lsp-server[all]"`
     vim.lsp.config("pyright", { -- Requires `npm install -g pyright`
         settings = {
             python = {
                 anaysis = {
                     autoSearchPaths = true,
-                    diagnosticMode = 'openFilesOnly',
+                    diagnosticMode = 'openFilesOnly'
                 }
             }
         }
     })
-    --vim.lsp.config("ty", {}) -- Requires `pip install ty`
+    -- vim.lsp.config("ty", {}) -- Use standalone ty installer from docs
 
     -- RLS 2.0
     vim.lsp.config("rust_analyzer", {})  -- brew install rust-analyzer
@@ -362,9 +360,9 @@ lua <<EOF
   vim.lsp.config("rust_analyzer", {
     capabilities = capabilities
   })
-  -- vim.lsp.config("ty", {
-  --   capabilities = capabilities
-  -- })
+  vim.lsp.config("ty", {
+    capabilities = capabilities
+  })
   vim.lsp.config("pyright", {
     capabilities = capabilities
   })
@@ -380,10 +378,10 @@ nnoremap <Leader>D  <cmd>lua vim.lsp.buf.declaration()<CR>
 nnoremap <Leader>d  <cmd>lua vim.lsp.buf.definition()<CR>
 nnoremap <Leader>s  <cmd>lua vim.lsp.buf.hover()<CR>
 nnoremap <Leader>r  <cmd>lua vim.lsp.buf.rename()<CR>
+nnoremap <Leader>R  <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap gD         <cmd>lua vim.lsp.buf.implementation()<CR>
 nnoremap gk         <cmd>lua vim.lsp.buf.signature_help()<CR>
 nnoremap <Leader>S  <cmd>lua vim.lsp.buf.type_definition()<CR>
-nnoremap gr         <cmd>lua vim.lsp.buf.references()<CR>
 nnoremap g0         <cmd>lua vim.lsp.buf.document_symbol()<CR>
 nnoremap gW         <cmd>lua vim.lsp.buf.workspace_symbol()<CR>
 
@@ -403,13 +401,20 @@ lua <<EOF
                 hidden = true
             },
             live_grep = {
-                hidden = true
+                additional_args = function(opts)
+                  return {"--hidden"}
+                end
+            },
+            grep_string = {
+                additional_args = function(opts)
+                  return {"--hidden"}
+                end
             }
         },
         defaults = {
             file_ignore_patterns = {
                 "node_modules",
-                ".git",
+                "^%.git/",  -- Ignore .git dir but not .github
                 ".pickle",
                 ".csv",
                 "data/.*.json",
@@ -430,33 +435,22 @@ lua <<EOF
             require("neotest-python")({
                 dap = { justMyCode = false,
                     },
-                runner = "bh-pytest" -- Need to define a custom adapter + TestRunner for this name before it will work
+                runner = "pytest",
+                args = { "-s" }
             }),
         }
     }
 EOF
-nnoremap <Leader><Leader>t <cmd>lua require("neotest").run.run()<CR>
+nnoremap <Leader>nt <cmd>lua require("neotest").run.run()<CR>
+nnoremap <Leader>na <cmd>lua require("neotest").run.attach()<CR>
+nnoremap <Leader>nO <cmd>lua require("neotest").output_panel.open()<CR>
+nnoremap <Leader>no <cmd>lua require("neotest").output.open()<CR>
 
-" ~~~~~ SymbolsOutline ~~~~~
-lua << EOF
-    require("symbols-outline").setup {
-        keymaps = { -- These keymaps can be a string or a table for multiple keys
-            close = {"<Esc>", "q"},
-            goto_location = "<CR>",
-            focus_location = "<S-CR>",
-            hover_symbol = "<Leader>s",
-            toggle_preview = "K",
-            rename_symbol = "r",
-            code_actions = "a",
-            fold = "x",
-            unfold = "o",
-            fold_all = "X",
-            unfold_all = "O",
-            fold_reset = "R",
-          }
-    }
+" ~~~~~ Outline ~~~~~
+lua <<EOF
+    require("outline").setup({})
 EOF
-nnoremap <Leader>o :SymbolsOutline<CR>
+nnoremap <Leader>o :Outline<CR>
 
 " ~~~~~ Vim-Fugitive ~~~~~
 set diffopt+=vertical " make diffs open vertically instead of horizontally (ew)
@@ -467,33 +461,49 @@ lua << EOF
 EOF
 nnoremap <Leader>e :NvimTreeToggle<CR>
 
+" ~~~~~ nvim-lint ~~~~~
+lua <<EOF
+    -- Register oxlint, based on `lua/lint/linters/jshint.lua`
+    require("lint").linters.oxlint = {
+        name = "oxlint",
+        cmd = "oxlint",
+        stdin = false,
+        args = { "--format", "unix" },
+        stream = "stdout",
+        ignore_exitcode = true,
+        parser = require("lint.parser").from_errorformat("%f:%l:%c: %m", {
+            source = "oxlint",
+            severity = vim.diagnostic.severity.WARN,
+        }),
+    }
+    require('lint').linters_by_ft = {
+        python = { 'ruff' },
+        typescript = { 'oxlint' },
+        javascript = { 'oxlint' },
+    }
+    vim.api.nvim_create_autocmd({ "BufWritePost" }, {
+      callback = function()
+        require("lint").try_lint()
+      end,
+    })
+EOF
 
-" ~~~~~ ALE ~~~~~
-nnoremap <Leader>F :ALEFix<CR>
-
-" Fixer for jsonnet files
-autocmd FileType jsonnet nnoremap <buffer> <Leader>f :w<CR>:silent !jsonnetfmt --comment-style s --string-style d -i %<CR>
-
-" Specify fixers for different filetypes
-let g:ale_fixers = {
-    \ 'svg': ['xmllint'],
-    \ 'python': ['ruff', 'ruff_format'],
-    \ 'javascript': ['prettier'],
-    \ 'typescript': ['prettier'],
-    \ 'rust': ['rustfmt'],
-    \ }
-let g:ale_linters = {
-    \ 'python': ['ruff'],
-    \ }
-
-let g:ale_javascript_prettier_executable = 'prettierd'
-let g:ale_python_ruff_auto_poetry = 1
-
-" Set MYPYPATH explicitly if we're in a virtualenv
-if !empty($VIRTUAL_ENV)
-    let $MYPYPATH = $VIRTUAL_ENV.''
-else
-endif
+" ~~~~~ conform ~~~~~
+lua <<EOF
+    require("conform").setup({
+        formatters_by_ft = {
+            python = { "ruff_fix", "ruff_format" },
+            javascript = { "oxfmt" },
+            typescript = { "oxfmt" },
+            json = { "oxfmt" }
+        },
+        format_on_save = {
+            -- These options will be passed to conform.format()
+            timeout_ms = 500,
+            lsp_format = "fallback",
+        }
+    })
+EOF
 
 " ~~~~~ Autopairs ~~~~~
 lua << EOF
