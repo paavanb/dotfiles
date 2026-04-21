@@ -15,6 +15,13 @@
     sup = !git branch --set-upstream-to=origin/`git symbolic-ref --short HEAD`
     hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
     recent = for-each-ref --count=10 --sort=-committerdate refs/heads/ --format='%(refname:short)'
+    # Show which branches are gone on remote (i.e., can be deleted locally)
+    gone = !git branch -vv | grep ': gone'
+    # Interative delete gone branches. List all gone branches, grab names, write to tmp, let me edit, then delete whatever branches are named in the file
+    cleanup = !git gone \
+        | awk '{print $1}' > /tmp/merged-branches \
+        && vi /tmp/merged-branches \
+        && xargs git branch -D </tmp/merged-branches
 
 [color]
     branch = auto
@@ -40,8 +47,21 @@
 [pull]
     rebase = false
 
+[push]
+    autoSetupRemote = true
+
 [core]
 editor = nvim
 
 [fetch]
     prune = true
+[credential]
+	helper = 
+	helper = /usr/local/share/gcm-core/git-credential-manager
+[credential "https://dev.azure.com"]
+	useHttpPath = true
+[filter "lfs"]
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
